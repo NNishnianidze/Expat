@@ -10,7 +10,6 @@ Password Reset  | Categorize Transactions   | Total Expense
 2FA             | Import Transactions       | Total Net
 
 ## Using ##
-- - - -
 ### Backend ###
 * PHP
 * SlimPHP
