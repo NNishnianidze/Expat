@@ -1,9 +1,10 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 use App\Config;
 use App\Enum\AppEnvironment;
+use App\Twig\TwigExtension;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Psr\Container\ContainerInterface;
@@ -21,7 +22,7 @@ use function DI\create;
 
 return [
     Config::class                 => create(Config::class)->constructor(require CONFIG_PATH . '/app.php'),
-    EntityManager::class          => fn(Config $config) => EntityManager::create(
+    EntityManager::class          => fn (Config $config) => EntityManager::create(
         $config->get('doctrine.connection'),
         ORMSetup::createAttributeMetadataConfiguration(
             $config->get('doctrine.entity_dir'),
@@ -37,16 +38,17 @@ return [
         $twig->addExtension(new IntlExtension());
         $twig->addExtension(new EntryFilesTwigExtension($container));
         $twig->addExtension(new AssetExtension($container->get('webpack_encore.packages')));
+        $twig->addExtension(new TwigExtension());
 
         return $twig;
     },
     /**
      * The following two bindings are needed for EntryFilesTwigExtension & AssetExtension to work for Twig
      */
-    'webpack_encore.packages'     => fn() => new Packages(
+    'webpack_encore.packages'     => fn () => new Packages(
         new Package(new JsonManifestVersionStrategy(BUILD_PATH . '/manifest.json'))
     ),
-    'webpack_encore.tag_renderer' => fn(ContainerInterface $container) => new TagRenderer(
+    'webpack_encore.tag_renderer' => fn (ContainerInterface $container) => new TagRenderer(
         new EntrypointLookup(BUILD_PATH . '/entrypoints.json'),
         $container->get('webpack_encore.packages')
     ),

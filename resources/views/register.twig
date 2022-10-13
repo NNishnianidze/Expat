@@ -1,0 +1,43 @@
+{% extends 'head.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('register') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('register') }}
+{% endblock %}
+
+{% block content %}
+<div class="container top mb-2">
+    <h4 class="card-title mt-3 text-center">Sign up</h4>
+</div>
+
+<div class="container d-flex align-items-center justify-content-center">
+    <form action="/register" method="post" class="form-signin">
+        
+        {{ getMsg()|raw }}
+
+        <div class="form-group input-group mt-2">
+            <input name="uid" class="form-control" placeholder="Username" type="text">
+        </div>
+        <div class="form-group input-group mt-2">
+            <input name="email" class="form-control" placeholder="Email address" type="email">
+        </div>
+        <div class="form-group input-group mt-2">
+            <input name="pwd" class="form-control" placeholder="Password" type="password">
+        </div>
+        <div class="form-group input-group mt-2">
+            <input name="pwdrepeat" class="form-control" placeholder="Repeat password" type="password">
+        </div>
+        <div class="form-group mt-2">
+            <button name="submit" type="submit" class="btn btn-primary btn-block"> Create Account </button>
+        </div>
+        <p class="text-center">Have an account?
+            <a href="/login">Log In</a>
+        </p>
+    </form>
+</div> 
+{% endblock %}
