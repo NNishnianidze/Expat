@@ -27,7 +27,7 @@ class RegisterController
         return $this->twig->render($response, 'register.twig');
     }
 
-    public function register()
+    public function register(Request $request, Response $response)
     {
         $db = new DB;
 
@@ -53,9 +53,13 @@ class RegisterController
             header('location: ../register?msg=passwordDontMatch');
         }
 
-        $db->createUser($_POST('name'), $_POST['uid'], $_POST['email'], $_POST['pwd']);
+        if ($_POST['pwd'] === $_POST['pwdrepeat']) {
+            $db->createUser($_POST('name'), $_POST['uid'], $_POST['email'], $_POST['pwd']);
 
-        header('location: ../login?msg=successAccount');
-        exit();
+            header('location: ../login?msg=successAccount');
+            exit();
+        }
+
+        return $this->twig->render($response, '404.twig');
     }
 }

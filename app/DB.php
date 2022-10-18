@@ -7,7 +7,6 @@ namespace App;
 use App\Entity\Users;
 use App\EM;
 use App\Entity\PasswordResets;
-use DateTime;
 
 class DB
 {
@@ -94,8 +93,7 @@ class DB
             ->setName($name)
             ->setUserName($userName)
             ->setUserEmail($email)
-            ->setUserPwd($pwd)
-            ->setCreatedAt(new DateTime());
+            ->setUserPwd($pwd);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -107,8 +105,7 @@ class DB
 
         $passwordReset
             ->setUserEmail($email)
-            ->setToken($token)
-            ->setCreatedAt();
+            ->setToken($token);
 
         $this->entityManager->persist($passwordReset);
         $this->entityManager->flush();
