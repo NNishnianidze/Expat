@@ -23,8 +23,11 @@ Encore
     .addEntry("dashboard", "./resources/js/dashboard.js")
     .addEntry("register", "./resources/js/register.js")
     .addEntry("login", "./resources/js/login.js")
-    .addEntry("head", "./resources/js/head.js")
+    .addEntry("form-head", "./resources/js/form-head.js")
     .addEntry("404", "./resources/js/404.js")
+    .addEntry("new-password", "./resources/js/new-password.js")
+    .addEntry("password-reset", "./resources/js/password-reset.js")
+
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()

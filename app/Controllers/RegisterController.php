@@ -27,12 +27,17 @@ class RegisterController
         return $this->twig->render($response, 'register.twig');
     }
 
-    public function register(Request $request, Response $response)
+    public function register()
     {
         $db = new DB;
 
-        $userEmail = $db->getUserEmail($_POST['email']);
-        $userName = $db->getUserName($_POST['uid']);
+        if (!isset($_POST['email']) || !isset($_POST['uid']) || !isset($_POST['pwd'])) {
+            header('location: ../register?msg=emptyField');
+            exit();
+        }
+
+        $userEmail = $db->validateUserEmail($_POST['email']);
+        $userName = $db->validateUserName($_POST['uid']);
 
         if (!empty($userEmail)) {
             header('location: ../register?msg=invalidEmail');
@@ -44,14 +49,13 @@ class RegisterController
             exit();
         }
 
-        if ($_POST['pwd'] === $_POST['pwdrepeat']) {
-
-            $db->createUser($_POST['uid'], $_POST['email'], $_POST['pwd']);
-
-            header('location: ../login?msg=success');
-            exit();
+        if ($_POST['pwd'] !== $_POST['pwdrepeat']) {
+            header('location: ../register?msg=passwordDontMatch');
         }
 
-        return $this->twig->render($response, '404.twig');
+        $db->createUser($_POST['uid'], $_POST['email'], $_POST['pwd']);
+
+        header('location: ../login?msg=successAccount');
+        exit();
     }
 }

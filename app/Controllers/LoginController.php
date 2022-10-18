@@ -31,7 +31,12 @@ class LoginController
     {
         $db = new DB;
 
-        $userEmail = $db->getUserEmail($_POST['email']);
+        if (!isset($_POST['email']) || !isset($_POST['pwd'])) {
+            header('location: ../login?msg=emptyField');
+            exit();
+        }
+
+        $userEmail = $db->validateUserEmail($_POST['email']);
 
         if (empty($userEmail)) {
             header('location: ../login?msg=invalidInput');

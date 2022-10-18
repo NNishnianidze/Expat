@@ -1,4 +1,4 @@
-{% extends 'head.twig' %}
+{% extends 'form-head.twig' %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -30,7 +30,7 @@
             <button name="submit" type="submit" class="btn btn-primary btn-block"> Log In </button>
         </div>
         <p class="text-center mt-2">Forgot Password?
-            <a href="/register">Reset Password</a>
+            <a href="/password-reset">Reset Password</a>
         </p>
         <p class="text-center">Don't have an account?
             <a href="/register">Register</a>

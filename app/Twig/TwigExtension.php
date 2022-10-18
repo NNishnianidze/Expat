@@ -37,14 +37,44 @@ class TwigExtension extends AbstractExtension
                 <p>User with This Email Already Exists!</p>
             </div>',
 
-            'invalidUserName' => '
-            <div class="alert alert-danger" role="alert">
+            'invalidUserName' =>
+            '<div class="alert alert-danger" role="alert">
                 <p>User with This Username Already Exists!</p>
             </div>',
 
-            'success' =>
+            'successAccount' =>
             '<div class="alert alert-success" role="alert">
                 <p>Successfully created Account!</p>
+            </div>',
+
+            'NotFoundEmail' =>
+            '<div class="alert alert-danger" role="alert">
+                <p>Sorry User with This Email Dont Exists!</p>
+            </div>',
+
+            'successPasswordReset' =>
+            '<div class="alert alert-success" role="alert">
+                <p>Your Password is Changed!</p>
+            </div>',
+
+            'passwordDontMatch' =>
+            '<div class="alert alert-danger" role="alert">
+                <p>Password Dont Match!</p>
+            </div>',
+
+            'emptyField' =>
+            '<div class="alert alert-danger" role="alert">
+                <p>Please Fill all Fields!</p>
+            </div>',
+
+            'successSendEmail' =>
+            '<div class="alert alert-success" role="alert">
+                <p>An Email was send to your adress! Please check your Inbox!</p>
+            </div>',
+
+            'newToken' =>
+            '<div class="alert alert-danger" role="alert">
+                <p>Password Reset link expired please make new request.</p>
             </div>',
 
             default => null,
