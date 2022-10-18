@@ -7,6 +7,7 @@ namespace App;
 use App\Entity\Users;
 use App\EM;
 use App\Entity\PasswordResets;
+use DateTime;
 
 class DB
 {
@@ -22,16 +23,16 @@ class DB
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
         $queryBuilder
-            ->select('u.userEmail')
+            ->select('u.email')
             ->from(Users::class, 'u')
-            ->where('u.userEmail = :email')
+            ->where('u.email = :email')
             ->setParameter('email', $email);
 
         $query = $queryBuilder->getQuery();
 
         $userEmail = $query->getOneOrNullResult();
 
-        return $userEmail['userEmail'] ?? [];
+        return $userEmail['email'] ?? [];
     }
 
     public function getUserNameFromEmail(string $email): string|array
@@ -73,27 +74,28 @@ class DB
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
         $queryBuilder
-            ->select('u.userPwd')
+            ->select('u.password')
             ->from(Users::class, 'u')
-            ->where('u.userEmail = :email')
+            ->where('u.email = :email')
             ->setParameter('email', $email);
 
         $query = $queryBuilder->getQuery();
 
         $pwd = $query->getOneOrNullResult();
 
-        return $pwd['userPwd'] ?? [];
+        return $pwd['password'] ?? [];
     }
 
-    public function createUser(string $userName, string $userEmail, string $pwd): void
+    public function createUser(string $name, string $userName, string $email, string $pwd): void
     {
         $user = new Users;
 
-        $user->setUserName($userName)
-            ->setUserEmail($userEmail)
+        $user
+            ->setName($name)
+            ->setUserName($userName)
+            ->setUserEmail($email)
             ->setUserPwd($pwd)
-            ->setCreatedAt()
-            ->setActive();
+            ->setCreatedAt(new DateTime());
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -119,7 +121,7 @@ class DB
         $queryBuilder
             ->update(PasswordResets::class, 'pr')
             ->set('pr.token', ':token')
-            ->where('pr.userEmail = :email')
+            ->where('pr.email = :email')
             ->setParameter('token', $token)
             ->setParameter('email', $email);
 
@@ -137,7 +139,7 @@ class DB
         $queryBuilder
             ->select('pr.token')
             ->from(PasswordResets::class, 'pr')
-            ->where('pr.userEmail = :email')
+            ->where('pr.email = :email')
             ->setParameter('email', $email);
 
         $query = $queryBuilder->getQuery();
@@ -147,9 +149,9 @@ class DB
         return $token['token'] ?? null;
     }
 
-    public function updateUserPwd(string $email, string $pwd): void
+    public function updateUserPwd(string $email, string $password): void
     {
-        $pwd = password_hash($pwd, PASSWORD_DEFAULT);
+        $password = password_hash($password, PASSWORD_DEFAULT);
 
         $this->entityManager->clear();
 
@@ -157,10 +159,10 @@ class DB
 
         $queryBuilder
             ->update(Users::class, 'u')
-            ->set('u.userPwd', ':pwd')
-            ->where('u.userEmail = :email')
+            ->set('u.password', ':pwd')
+            ->where('u.email = :email')
             ->setParameter('email', $email)
-            ->setParameter('pwd', $pwd);
+            ->setParameter('pwd', $password);
 
         $query = $queryBuilder->getQuery();
 
@@ -175,7 +177,7 @@ class DB
 
         $queryBuilder
             ->delete(PasswordResets::class, 'pr')
-            ->where('pr.userEmail = :email')
+            ->where('pr.email = :email')
             ->setParameter('email', $email);
 
         $query = $queryBuilder->getQuery();
@@ -191,8 +193,8 @@ class DB
 
         $queryBuilder
             ->update(PasswordResets::class, 'pr')
-            ->set('pr.createdAt', ':date')
-            ->where('pr.userEmail = :email')
+            ->set('pr.created_at', ':date')
+            ->where('pr.email = :email')
             ->setParameter('date', $date)
             ->setParameter('email', $email);
 

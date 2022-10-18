@@ -31,7 +31,7 @@ class RegisterController
     {
         $db = new DB;
 
-        if (!isset($_POST['email']) || !isset($_POST['uid']) || !isset($_POST['pwd'])) {
+        if (!isset($_POST['email']) || !isset($_POST['uid']) || !isset($_POST['pwd']) || !isset($_POST['name'])) {
             header('location: ../register?msg=emptyField');
             exit();
         }
@@ -53,7 +53,7 @@ class RegisterController
             header('location: ../register?msg=passwordDontMatch');
         }
 
-        $db->createUser($_POST['uid'], $_POST['email'], $_POST['pwd']);
+        $db->createUser($_POST('name'), $_POST['uid'], $_POST['email'], $_POST['pwd']);
 
         header('location: ../login?msg=successAccount');
         exit();

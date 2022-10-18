@@ -10,12 +10,12 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
-#[Entity]
-#[Table('users')]
-class Users
+#[Entity, Table('categories')]
+class Category
 {
     #[Id, Column(options: ['unsigned' => true]), GeneratedValue]
     private int $id;
@@ -23,33 +23,22 @@ class Users
     #[Column]
     private string $name;
 
-    #[Column(unique: true)]
-    private string $userName;
-
-    #[Column(unique: true)]
-    private string $email;
-
-    #[Column]
-    private string $password;
-
     #[Column(name: 'created_at')]
     private \DateTime $createdAt;
 
     #[Column(name: 'updated_at')]
     private \DateTime $updatedAt;
 
-    #[OneToMany(mappedBy: 'user', targetEntity: Category::class)]
-    private Collection $categories;
+    #[ManyToOne(inversedBy: 'categories')]
+    private Users $user;
 
-    #[OneToMany(mappedBy: 'user', targetEntity: Transaction::class)]
+    #[OneToMany(mappedBy: 'category', targetEntity: Transaction::class)]
     private Collection $transactions;
 
     public function __construct()
     {
-        $this->categories   = new ArrayCollection();
         $this->transactions = new ArrayCollection();
     }
-
 
     public function getId(): int
     {
@@ -61,45 +50,9 @@ class Users
         return $this->name;
     }
 
-    public function setName(string $name): Users
+    public function setName(string $name): Category
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getUserName(): string
-    {
-        return $this->userName;
-    }
-
-    public function setUserName(string $userName): Users
-    {
-        $this->userName = $userName;
-
-        return $this;
-    }
-
-    public function getUserEmail(): string
-    {
-        return $this->email;
-    }
-
-    public function setUserEmail(string $email): Users
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
-    public function getUserPwd(): string
-    {
-        return $this->password;
-    }
-
-    public function setUserPwd($pwd): Users
-    {
-        $this->password = password_hash($pwd, PASSWORD_DEFAULT);
 
         return $this;
     }
@@ -109,7 +62,7 @@ class Users
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): Users
+    public function setCreatedAt(\DateTime $createdAt): Category
     {
         $this->createdAt = $createdAt;
 
@@ -121,21 +74,23 @@ class Users
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt): Users
+    public function setUpdatedAt(\DateTime $updatedAt): Category
     {
         $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    public function getCategories(): ArrayCollection|Collection
+    public function getUser(): Users
     {
-        return $this->categories;
+        return $this->user;
     }
 
-    public function addCategory(Category $category): Users
+    public function setUser(Users $user): Category
     {
-        $this->categories->add($category);
+        $user->addCategory($this);
+
+        $this->user = $user;
 
         return $this;
     }
@@ -145,7 +100,7 @@ class Users
         return $this->transactions;
     }
 
-    public function addTransaction(Transaction $transaction): Users
+    public function addTransaction(Transaction $transaction): Category
     {
         $this->transactions->add($transaction);
 
