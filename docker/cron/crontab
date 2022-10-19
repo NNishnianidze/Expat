@@ -1,1 +1,1 @@
-*/10 * * * * php /var/www/scripts/DeleteResetLinks.php >> /var/log/cron/cron.log 2>&1
+*/10 * * * * php /var/www/scripts/name.php >> /var/log/cron/cron.log 2>&1
