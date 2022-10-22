@@ -8,7 +8,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
 
-class HomeController
+class TransactionsController
 {
     public function __construct(private readonly Twig $twig)
     {
@@ -19,7 +19,7 @@ class HomeController
         session_start();
 
         if (!empty($_SESSION["userEmail"])) {
-            return $this->twig->render($response, 'dashboard.twig');
+            return $this->twig->render($response, 'transactions.twig');
         }
 
         session_unset();

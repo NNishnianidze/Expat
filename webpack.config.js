@@ -27,6 +27,8 @@ Encore
     .addEntry("404", "./resources/js/404.js")
     .addEntry("new-password", "./resources/js/new-password.js")
     .addEntry("password-reset", "./resources/js/password-reset.js")
+    .addEntry("transactions", "./resources/js/transactions.js")
+    .addEntry("categories", "./resources/js/categories.js")
 
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
