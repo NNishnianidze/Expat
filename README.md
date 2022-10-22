@@ -27,5 +27,6 @@ Password Reset  | Categorize Transactions   | Total Expense
 ## Progression ##
 * ✅ Configured DB Entities
 * ✅ Created Login/Register/PaswordReset Functionalities
-Next: Create Transactions implementing CRUD features
-      Show them on Dashboard
+### Next ### 
+* Create Transactions implementing CRUD features
+* Show them on Dashboard
