@@ -28,5 +28,6 @@ Password Reset  | Categorize Transactions   | Total Expense
 * ✅ Configured DB Entities
 * ✅ Created Login/Register/PaswordReset Functionalities
 ### Next ### 
+* Refactor to Form Validator - vlucas/valitron
 * Create Transactions implementing CRUD features
 * Show them on Dashboard
