@@ -2,7 +2,6 @@
 Simple expense Tracker app
 
 ## App Features ##
-- - - -
 User Auth       | Transactions              | Dashboard
 -------------   | -------------             | -------------
 Login/Register  | CRUD Operations           | Total Income
@@ -23,3 +22,10 @@ Password Reset  | Categorize Transactions   | Total Expense
 * Bootstrap
 * Twig
 * HTML/CSS/JS
+
+
+## Progression ##
+* ✅ Configured DB Entities
+* ✅ Created Login/Register/PaswordReset Functionalities
+Next: Create Transactions implementing CRUD features
+      Show them on Dashboard
