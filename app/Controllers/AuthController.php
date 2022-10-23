@@ -65,6 +65,16 @@ class AuthController
         return $this->twig->render($response, '404.twig');
     }
 
+    public function logOut()
+    {
+        session_start();
+        session_unset();
+        session_destroy();
+
+        header('location: ../login');
+        exit();
+    }
+
     public function renderNewPassword(Request $request, Response $response): Response
     {
         if (!isset($_GET['email'])) {
