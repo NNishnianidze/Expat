@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\DB;
+use App\Exception\ValidationException;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
+use Valitron\Validator;
 
 class AuthController
 {
-    public function __construct(private readonly Twig $twig)
+    public function __construct(private readonly Twig $twig, private DB $db)
     {
+        $this->db = new DB;
     }
 
     public function renderLogin(Request $request, Response $response): Response
@@ -33,21 +36,19 @@ class AuthController
 
     public function validateUser(Request $request, Response $response)
     {
-        $db = new DB;
-
         if (!isset($_POST['email']) || !isset($_POST['pwd'])) {
             header('location: ../login?msg=emptyField');
             exit();
         }
 
-        $userEmail = $db->validateUserEmail($_POST['email']);
+        $userEmail = $this->db->validateUserEmail($_POST['email']);
 
         if (empty($userEmail)) {
             header('location: ../login?msg=invalidInput');
             exit();
         }
 
-        $userPwd = $db->getUserPwd($_POST['email']);
+        $userPwd = $this->db->getUserPwd($_POST['email']);
 
         if (!password_verify($_POST['pwd'], $userPwd)) {
             header('location: ../login?msg=invalidInput');
@@ -87,12 +88,10 @@ class AuthController
             exit();
         }
 
-        $db = new DB;
-
         $email = $_GET['email'];
         $token = $_GET['token'];;
 
-        $dbToken = $db->getToken($email);
+        $dbToken = $this->db->getToken($email);
 
         if ($dbToken === $token) {
             return $this->twig->render($response, 'new-password.twig', ['get' => $_GET]);
@@ -105,8 +104,6 @@ class AuthController
 
     public function setNewPass()
     {
-        $db = new DB;
-
         $email = $_POST['email'];
         $uri = '?email=' . $email;
 
@@ -120,7 +117,7 @@ class AuthController
             exit();
         }
 
-        $db->updateUserPwd($email, $_POST['new_pass']);
+        $this->db->updateUserPwd($email, $_POST['new_pass']);
 
         header('location: ../login?msg=successPasswordReset');
         exit();
@@ -138,8 +135,6 @@ class AuthController
 
     public function resetPass(Request $request, Response $response)
     {
-        $db = new DB;
-
         if (!isset($_POST['email'])) {
             header('location: ../password-reset?msg=emptyField');
             exit();
@@ -147,7 +142,7 @@ class AuthController
 
         $email = $_POST['email'];
 
-        $userName = $db->getUserNameFromEmail($email);
+        $userName = $this->db->getUserNameFromEmail($email);
 
         if (empty($userName)) {
             header('location: ../password-reset?msg=NotFoundEmail');
@@ -188,16 +183,14 @@ class AuthController
 
     public function getToken(string $email): string
     {
-        $db = new DB;
-
         $token = bin2hex(random_bytes(50));
 
-        if (($db->getToken($email) !== null)) {
-            $db->modifyToken($email, $token);
+        if (($this->db->getToken($email) !== null)) {
+            $this->db->modifyToken($email, $token);
             return $token;
         }
 
-        $db->storeToken($email, $token);
+        $this->db->storeToken($email, $token);
         return $token;
     }
 
@@ -215,15 +208,31 @@ class AuthController
 
     public function register(Request $request, Response $response)
     {
-        $db = new DB;
+        // $data = $request->getParsedBody();
+
+        // $v = new Validator($data);
+
+        // $v->rule('required', ['name', 'uid', 'email', 'pwd', 'pwdrepeat']);
+        // $v->rule('email', 'email');
+        // $v->rule('equals', 'pwdrepeat', 'pwd')->label('Confirm Password');
+        // $v->rule(
+        //     fn ($field, $value, $params, $fields) => !$this->entityManager->getRepository(User::class)->count(
+        //         ['email' => $value]
+        //     ),
+        //     'email'
+        // )->message('User with the given email address already exists');
+
+        // if (!$v->validate()) {
+        //     throw new ValidationException($v->errors());
+        // }
 
         if (!isset($_POST['email']) || !isset($_POST['uid']) || !isset($_POST['pwd']) || !isset($_POST['name'])) {
             header('location: ../register?msg=emptyField');
             exit();
         }
 
-        $userEmail = $db->validateUserEmail($_POST['email']);
-        $userName = $db->validateUserName($_POST['uid']);
+        $userEmail = $this->db->validateUserEmail($_POST['email']);
+        $userName = $this->db->validateUserName($_POST['uid']);
 
         if (!empty($userEmail)) {
             header('location: ../register?msg=invalidEmail');
@@ -240,7 +249,7 @@ class AuthController
         }
 
         if ($_POST['pwd'] === $_POST['pwdrepeat']) {
-            $db->createUser($_POST('name'), $_POST['uid'], $_POST['email'], $_POST['pwd']);
+            $this->db->createUser($_POST('name'), $_POST['uid'], $_POST['email'], $_POST['pwd']);
 
             header('location: ../login?msg=successAccount');
             exit();
