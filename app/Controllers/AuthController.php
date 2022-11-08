@@ -6,69 +6,75 @@ namespace App\Controllers;
 
 use App\DB;
 use App\Exception\ValidationException;
+use App\Validator;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
-use Valitron\Validator;
 
 class AuthController
 {
-    public function __construct(private readonly Twig $twig, private DB $db)
-    {
-        $this->db = new DB;
+    public function __construct(
+        private readonly Twig $twig,
+        private DB $db,
+        private Validator $validator,
+    ) {
     }
 
     public function renderLogin(Request $request, Response $response): Response
     {
-        session_start();
-
         if (!empty($_SESSION["userEmail"])) {
             header('location: ../dashboard');
             exit();
         }
 
-        session_unset();
         return $this->twig->render($response, 'login.twig');
     }
 
-    public function validateUser(Request $request, Response $response)
+    public function renderRegister(Request $request, Response $response): Response
     {
-        if (!isset($_POST['email']) || !isset($_POST['pwd'])) {
-            header('location: ../login?msg=emptyField');
-            exit();
+        if (!empty($_SESSION["userEmail"])) {
+            return $this->twig->render($response, 'dashboard.twig');
         }
 
-        $userEmail = $this->db->validateUserEmail($_POST['email']);
+        return $this->twig->render($response, 'register.twig');
+    }
 
-        if (empty($userEmail)) {
-            header('location: ../login?msg=invalidInput');
-            exit();
+    public function login(Request $request, Response $response)
+    {
+        $data = $request->getParsedBody();
+
+        $validate = $this->validator->validateLogin($data);
+
+        if ($validate !== true) {
+            throw new ValidationException($validate);
         }
 
-        $userPwd = $this->db->getUserPwd($_POST['email']);
+        $_SESSION["userEmail"] = $_POST["email"];
 
-        if (!password_verify($_POST['pwd'], $userPwd)) {
-            header('location: ../login?msg=invalidInput');
-            exit();
+        return $this->twig->render($response, 'dashboard.twig');
+    }
+
+    public function register(Request $request, Response $response)
+    {
+        $data = $request->getParsedBody();
+
+        $validate = $this->validator->validateRegister($data);
+
+        if ($validate !== true) {
+            throw new ValidationException($validate);
         }
 
-        if (password_verify($_POST['pwd'], $userPwd)) {
-            session_start();
-            $_SESSION["userEmail"] = $_POST["email"];
-
-            header('location: ../dashboard');
-            exit();
-        }
+        $this->db->createUser($_POST['name'], $_POST['username'], $_POST['email'], $_POST['password']);
+        return $this->twig->render($response, 'login.twig', ['succes' => true]);
 
         return $this->twig->render($response, '404.twig');
     }
 
     public function logOut()
     {
-        session_start();
         session_unset();
         session_destroy();
 
@@ -78,14 +84,12 @@ class AuthController
 
     public function renderNewPassword(Request $request, Response $response): Response
     {
-        if (!isset($_GET['email'])) {
-            header('location: ../password-reset?msg=newToken');
-            exit();
-        }
+        $data = $_GET;
 
-        if (!isset($_GET['token'])) {
-            header('location: ../password-reset?msg=newToken');
-            exit();
+        $validate = $this->validator->validateNewPassword($data);
+
+        if ($validate !== true) {
+            throw new ValidationException($validate);
         }
 
         $email = $_GET['email'];
@@ -95,32 +99,26 @@ class AuthController
 
         if ($dbToken === $token) {
             return $this->twig->render($response, 'new-password.twig', ['get' => $_GET]);
-            exit();
         }
 
-        header('location: ../password-reset?msg=newToken');
-        exit();
+        return $this->twig->render($response, '404.twig');
     }
 
-    public function setNewPass()
+    public function setNewPass(Request $request, Response $response)
     {
         $email = $_POST['email'];
-        $uri = '?email=' . $email;
 
-        if (!isset($_POST['new_pass']) || !isset($_POST['new_pass_r'])) {
-            header('location: ../new-password' . $uri . '&msg=emptyField');
-            exit();
+        $data = $request->getParsedBody();
+
+        $validate = $this->validator->validateNewPass($data);
+
+        if ($validate !== true) {
+            throw new ValidationException($validate);
         }
 
-        if ($_POST['new_pass'] !== $_POST['new_pass_r']) {
-            header('location: ..' . $uri . '?msg=passwordDontMatch');
-            exit();
-        }
+        $this->db->updateUserPwd($email, $_POST['password']);
 
-        $this->db->updateUserPwd($email, $_POST['new_pass']);
-
-        header('location: ../login?msg=successPasswordReset');
-        exit();
+        return $this->twig->render($response, 'login.twig', ['success' => true]);
     }
 
     public function renderPasswordReset(Request $request, Response $response): Response
@@ -133,21 +131,17 @@ class AuthController
         exit();
     }
 
-    public function resetPass(Request $request, Response $response)
+    public function passwordReset(Request $request, Response $response)
     {
-        if (!isset($_POST['email'])) {
-            header('location: ../password-reset?msg=emptyField');
-            exit();
+        $data = $request->getParsedBody();
+
+        $validate = $this->validator->validatePasswordReset($data);
+
+        if ($validate !== true) {
+            throw new ValidationException($validate);
         }
 
         $email = $_POST['email'];
-
-        $userName = $this->db->getUserNameFromEmail($email);
-
-        if (empty($userName)) {
-            header('location: ../password-reset?msg=NotFoundEmail');
-            exit();
-        }
 
         $token = $this->getToken($email);
 
@@ -175,86 +169,19 @@ class AuthController
 
         $mailer->send($email);
 
-        header('location: ../password-reset?msg=successSendEmail');
-        exit();
-
-        return $this->twig->render($response, '404.twig');
+        return $this->twig->render($response, 'password-reset.twig', ['success' => true]);
     }
 
     public function getToken(string $email): string
     {
         $token = bin2hex(random_bytes(50));
 
-        if (($this->db->getToken($email) !== null)) {
+        if ($this->db->getToken($email) !== null) {
             $this->db->modifyToken($email, $token);
             return $token;
         }
 
         $this->db->storeToken($email, $token);
         return $token;
-    }
-
-    public function renderRegister(Request $request, Response $response): Response
-    {
-        session_start();
-
-        if (!empty($_SESSION["userEmail"])) {
-            header('location: ../dashboard');
-            exit();
-        }
-
-        return $this->twig->render($response, 'register.twig');
-    }
-
-    public function register(Request $request, Response $response)
-    {
-        // $data = $request->getParsedBody();
-
-        // $v = new Validator($data);
-
-        // $v->rule('required', ['name', 'uid', 'email', 'pwd', 'pwdrepeat']);
-        // $v->rule('email', 'email');
-        // $v->rule('equals', 'pwdrepeat', 'pwd')->label('Confirm Password');
-        // $v->rule(
-        //     fn ($field, $value, $params, $fields) => !$this->entityManager->getRepository(User::class)->count(
-        //         ['email' => $value]
-        //     ),
-        //     'email'
-        // )->message('User with the given email address already exists');
-
-        // if (!$v->validate()) {
-        //     throw new ValidationException($v->errors());
-        // }
-
-        if (!isset($_POST['email']) || !isset($_POST['uid']) || !isset($_POST['pwd']) || !isset($_POST['name'])) {
-            header('location: ../register?msg=emptyField');
-            exit();
-        }
-
-        $userEmail = $this->db->validateUserEmail($_POST['email']);
-        $userName = $this->db->validateUserName($_POST['uid']);
-
-        if (!empty($userEmail)) {
-            header('location: ../register?msg=invalidEmail');
-            exit();
-        }
-
-        if (!empty($userName)) {
-            header('location: ../register?msg=invalidUserName');
-            exit();
-        }
-
-        if ($_POST['pwd'] !== $_POST['pwdrepeat']) {
-            header('location: ../register?msg=passwordDontMatch');
-        }
-
-        if ($_POST['pwd'] === $_POST['pwdrepeat']) {
-            $this->db->createUser($_POST('name'), $_POST['uid'], $_POST['email'], $_POST['pwd']);
-
-            header('location: ../login?msg=successAccount');
-            exit();
-        }
-
-        return $this->twig->render($response, '404.twig');
     }
 }

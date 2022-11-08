@@ -17,24 +17,42 @@
 
 <div class="container d-flex align-items-center justify-content-center">
     <form action="/register" method="post" class="form-signin">
-        
-        {{ getMsg()|raw }}
 
         <div class="form-group input-group mt-2">
-            <input name="name" class="form-control" placeholder="Name" type="text">
+            <input name="name" class="form-control {{ errors.name ? 'is-invalid' : '' }}" placeholder="Name" type="text">
         </div>
+        <div class="invalid-feedback d-block">
+            {{ errors.name| first }}
+        </div>
+
         <div class="form-group input-group mt-2">
-            <input name="uid" class="form-control" placeholder="Username" type="text">
+            <input name="username" class="form-control {{ errors.username ? 'is-invalid' : '' }}" placeholder="Username" type="text">
         </div>
+        <div class="invalid-feedback d-block">
+            {{ errors.username| first }}
+        </div>
+
         <div class="form-group input-group mt-2">
-            <input name="email" class="form-control" placeholder="Email address" type="email">
+            <input name="email" class="form-control {{ errors.email ? 'is-invalid' : '' }}" placeholder="Email address" type="email">
         </div>
+        <div class="invalid-feedback d-block">
+            {{ errors.email| first }}
+        </div>
+
         <div class="form-group input-group mt-2">
-            <input name="pwd" class="form-control" placeholder="Password" type="password">
+            <input name="password" class="form-control {{ errors.password ? 'is-invalid' : '' }}" placeholder="Password" type="password">
         </div>
+        <div class="invalid-feedback d-block">
+            {{ errors.password| first }}
+        </div>
+
         <div class="form-group input-group mt-2">
-            <input name="pwdrepeat" class="form-control" placeholder="Repeat password" type="password">
+            <input name="confirmPassword" class="form-control {{ errors.confirmPassword ? 'is-invalid' : '' }}" placeholder="Confirm password" type="password">
         </div>
+        <div class="invalid-feedback d-block">
+            {{ errors.confirmPassword| first }}
+        </div>
+
         <div class="form-group mt-2">
             <button name="submit" type="submit" class="btn btn-primary btn-block"> Create Account </button>
         </div>

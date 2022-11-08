@@ -13,10 +13,10 @@ return function (App $app) {
     $app->get('/register', [AuthController::class, 'renderRegister']);
     $app->post('/register', [AuthController::class, 'register']);
     $app->get('/login', [AuthController::class, 'renderLogin']);
-    $app->post('/login', [AuthController::class, 'validateUser']);
+    $app->post('/login', [AuthController::class, 'login']);
     $app->get('/logout', [AuthController::class, 'logOut']);
     $app->get('/password-reset', [AuthController::class, 'renderPasswordReset']);
-    $app->post('/password-reset', [AuthController::class, 'resetPass']);
+    $app->post('/password-reset', [AuthController::class, 'passwordReset']);
     $app->get('/new-password', [AuthController::class, 'renderNewPassword']);
     $app->post('/new-password', [AuthController::class, 'setNewPass']);
     $app->get('/dashboard/transactions', [TransactionsController::class, 'index']);

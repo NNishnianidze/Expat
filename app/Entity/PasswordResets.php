@@ -23,7 +23,7 @@ class PasswordResets
     private int $id;
 
     #[Column]
-    private string $userEmail;
+    private string $email;
 
     #[Column(unique: true)]
     private string $token;
@@ -49,14 +49,14 @@ class PasswordResets
         $this->updatedAt = new \DateTime();
     }
 
-    public function getUserEmail(): string
+    public function getemail(): string
     {
-        return $this->userEmail;
+        return $this->email;
     }
 
-    public function setUserEmail(string $userEmail): PasswordResets
+    public function setEmail(string $email): PasswordResets
     {
-        $this->userEmail = $userEmail;
+        $this->email = $email;
 
         return $this;
     }

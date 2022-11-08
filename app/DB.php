@@ -5,67 +5,14 @@ declare(strict_types=1);
 namespace App;
 
 use App\Entity\Users;
-use App\EM;
 use App\Entity\PasswordResets;
+use Doctrine\ORM\EntityManager;
 
 class DB
 {
-    private $entityManager;
-
-    public function __construct()
-    {
-        $this->entityManager = EM::getEntityManager();
-    }
-
-    public function validateUserEmail(string $email): string|array
-    {
-        $queryBuilder = $this->entityManager->createQueryBuilder();
-
-        $queryBuilder
-            ->select('u.email')
-            ->from(Users::class, 'u')
-            ->where('u.email = :email')
-            ->setParameter('email', $email);
-
-        $query = $queryBuilder->getQuery();
-
-        $userEmail = $query->getOneOrNullResult();
-
-        return $userEmail['email'] ?? [];
-    }
-
-    public function getUserNameFromEmail(string $email): string|array
-    {
-        $queryBuilder = $this->entityManager->createQueryBuilder();
-
-        $queryBuilder
-            ->select('u.userName')
-            ->from(Users::class, 'u')
-            ->where('u.userEmail = :email')
-            ->setParameter('email', $email);
-
-        $query = $queryBuilder->getQuery();
-
-        $userEmail = $query->getOneOrNullResult();
-
-        return $userEmail['userName'] ?? [];
-    }
-
-    public function validateUserName(string $userName): string|array
-    {
-        $queryBuilder = $this->entityManager->createQueryBuilder();
-
-        $queryBuilder
-            ->select('u.userName')
-            ->from(Users::class, 'u')
-            ->where('u.userName = :name')
-            ->setParameter('name', $userName);
-
-        $query = $queryBuilder->getQuery();
-
-        $userName = $query->getOneOrNullResult();
-
-        return $userName['userName'] ?? [];
+    public function __construct(
+        private EntityManager $entityManager,
+    ) {
     }
 
     public function getUserPwd(string $email): string|array
@@ -104,7 +51,7 @@ class DB
         $passwordReset = new PasswordResets;
 
         $passwordReset
-            ->setUserEmail($email)
+            ->setEmail($email)
             ->setToken($token);
 
         $this->entityManager->persist($passwordReset);
@@ -125,8 +72,6 @@ class DB
         $query = $queryBuilder->getQuery();
 
         $query->getOneOrNullResult();
-
-        $this->setDateTime($email);
     }
 
     public function getToken($email): string|null
@@ -182,21 +127,37 @@ class DB
         $query->execute();
     }
 
-    public function setDateTime(string $email): void
+    public function validateEmailExist(string $email): bool|int
     {
-        $queryBuilder = $this->entityManager->createQueryBuilder();
+        return !$this->entityManager->getRepository(Users::class)->count(['email' => $email]);
+    }
 
-        $date = new \DateTime;
+    public function validateEmailNotExist(string $email): bool
+    {
+        if ($this->entityManager->getRepository(Users::class)->count(['email' => $email]) < 1) {
+            return false;
+        }
 
-        $queryBuilder
-            ->update(PasswordResets::class, 'pr')
-            ->set('pr.created_at', ':date')
-            ->where('pr.email = :email')
-            ->setParameter('date', $date)
-            ->setParameter('email', $email);
+        return true;
+    }
 
-        $query = $queryBuilder->getQuery();
+    public function validateUserName(string $username): bool|int
+    {
+        return !$this->entityManager->getRepository(Users::class)->count(['userName' => $username]);
+    }
 
-        $query->getOneOrNullResult();
+    public function vertifyPassword(string $email, string $value): bool
+    {
+        $userPassword = $this->getUserPwd($email);
+
+        if (empty($userPassword) || $userPassword === null) {
+            return false;
+        }
+
+        if (!password_verify($value, $userPassword)) {
+            return false;
+        }
+
+        return true;
     }
 }

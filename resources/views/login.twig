@@ -18,14 +18,27 @@
 <div class="container d-flex align-items-center justify-content-center">
     <form action="/login" method="post" class="form-signin">
 
-        {{ getMsg()|raw }}
+        {% if success is defined %}
+        <div class="alert alert-success" role="alert">
+            <p>Successfully Changed Password!</p>
+        </div>
+        {% endif %}
 
         <div class="form-group input-group mt-2">
-            <input name="email" class="form-control" placeholder="Username" type="email">
+            <input name="email" class="form-control {{ errors.email ? 'is-invalid' : '' }}" placeholder="Username" type="email">
         </div>
+        <div class="invalid-feedback d-block">
+            {{ errors.email| first }}
+        </div>
+
+
         <div class="form-group input-group mt-2">
-            <input name="pwd" class="form-control" placeholder="Password" type="password">
+            <input name="password" class="form-control {{ errors.password ? 'is-invalid' : '' }}" placeholder="Password" type="password">
         </div>
+        <div class="invalid-feedback d-block">
+            {{ errors.password| first }}
+        </div>
+        
         <div class="form-group mt-2">
             <button name="submit" type="submit" class="btn btn-primary btn-block"> Log In </button>
         </div>

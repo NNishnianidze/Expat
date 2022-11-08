@@ -16,8 +16,6 @@ class HomeController
 
     public function index(Request $request, Response $response)
     {
-        session_start();
-
         if (!empty($_SESSION["userEmail"])) {
             return $this->twig->render($response, 'dashboard.twig');
         }
