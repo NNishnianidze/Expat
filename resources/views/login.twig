@@ -25,7 +25,7 @@
         {% endif %}
 
         <div class="form-group input-group mt-2">
-            <input name="email" class="form-control {{ errors.email ? 'is-invalid' : '' }}" placeholder="Username" type="email">
+            <input name="email" class="form-control {{ errors.email ? 'is-invalid' : '' }}" placeholder="Username" value="{{ old.email }}" type="email">
         </div>
         <div class="invalid-feedback d-block">
             {{ errors.email| first }}

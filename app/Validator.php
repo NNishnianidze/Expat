@@ -25,7 +25,7 @@ class Validator
 
         $this->v->rule('required', ['name', 'username', 'email', 'password', 'confirmPassword']);
         $this->v->rule('email', 'email');
-        $this->v->rule('equals', 'confirmPassword', 'pwd')->message('Confirm Password must be the same as Password');
+        $this->v->rule('equals', 'confirmPassword', 'password')->message('Confirm Password must be the same as Password');
         $this->v->rule(
             fn ($field, $value, $params, $fields) => $this->db->validateEmailExist($value),
             'email'
