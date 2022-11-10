@@ -25,17 +25,12 @@ class AuthController
 
     public function renderLogin(Request $request, Response $response): Response
     {
-        if (!empty($_SESSION["userEmail"])) {
-            header('location: ../dashboard');
-            exit();
-        }
-
         return $this->twig->render($response, 'login.twig');
     }
 
     public function renderRegister(Request $request, Response $response): Response
     {
-        if (!empty($_SESSION["userEmail"])) {
+        if (!empty($_SESSION["user"])) {
             return $this->twig->render($response, 'dashboard.twig');
         }
 
@@ -48,13 +43,11 @@ class AuthController
 
         $validate = $this->validator->validateLogin($data);
 
-        if ($validate !== true) {
-            throw new ValidationException($validate);
+        if (!$validate) {
+            throw new ValidationException(['password' => ['You have entered an invalid username or password']]);
         }
 
-        $_SESSION["userEmail"] = $_POST["email"];
-
-        return $this->twig->render($response, 'dashboard.twig');
+        return $response->withHeader('Location', '/')->withStatus(302);
     }
 
     public function register(Request $request, Response $response)
@@ -67,19 +60,16 @@ class AuthController
             throw new ValidationException($validate);
         }
 
-        $this->db->createUser($_POST['name'], $_POST['username'], $_POST['email'], $_POST['password']);
-        return $this->twig->render($response, 'login.twig', ['succes' => true]);
+        $this->db->createUser($data['name'], $data['username'], $data['email'], $data['password']);
 
-        return $this->twig->render($response, '404.twig');
+        return $response->withHeader('Location', '/login')->withStatus(302);;
     }
 
-    public function logOut()
+    public function logOut(Request $request, Response $response)
     {
-        session_unset();
-        session_destroy();
+        $this->validator->validateLogOut();
 
-        header('location: ../login');
-        exit();
+        return $response->withHeader('Location', '/')->withStatus(302);
     }
 
     public function renderNewPassword(Request $request, Response $response): Response
@@ -106,9 +96,9 @@ class AuthController
 
     public function setNewPass(Request $request, Response $response)
     {
-        $email = $_POST['email'];
-
         $data = $request->getParsedBody();
+
+        $email = $data['email'];
 
         $validate = $this->validator->validateNewPass($data);
 
@@ -116,14 +106,14 @@ class AuthController
             throw new ValidationException($validate);
         }
 
-        $this->db->updateUserPwd($email, $_POST['password']);
+        $this->db->updateUserPwd($email, $data['password']);
 
-        return $this->twig->render($response, 'login.twig', ['success' => true]);
+        return $response->withHeader('Location', '/')->withStatus(302);
     }
 
     public function renderPasswordReset(Request $request, Response $response): Response
     {
-        if (empty($_SESSION["userEmail"])) {
+        if (empty($_SESSION["user"])) {
             return $this->twig->render($response, 'password-reset.twig');
         }
 
@@ -141,7 +131,7 @@ class AuthController
             throw new ValidationException($validate);
         }
 
-        $email = $_POST['email'];
+        $email = $data['email'];
 
         $token = $this->getToken($email);
 
@@ -169,7 +159,7 @@ class AuthController
 
         $mailer->send($email);
 
-        return $this->twig->render($response, 'password-reset.twig', ['success' => true]);
+        return $response;
     }
 
     public function getToken(string $email): string

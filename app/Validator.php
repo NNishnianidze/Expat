@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Contracts\AuthInterface;
 use App\Entity\Users;
 use Doctrine\ORM\EntityManager;
 use Valitron\Validator as ValitronValidator;
@@ -15,6 +16,7 @@ class Validator
     public function __construct(
         private DB $db,
         private EntityManager $entityManager,
+        private readonly AuthInterface $auth,
     ) {
     }
 
@@ -27,7 +29,7 @@ class Validator
         $this->v->rule('email', 'email');
         $this->v->rule('equals', 'confirmPassword', 'password')->message('Confirm Password must be the same as Password');
         $this->v->rule(
-            fn ($field, $value, $params, $fields) => $this->db->validateEmailExist($value),
+            fn ($field, $value, $params, $fields) => $this->db->validateEmailExistence($value),
             'email'
         )->message('User with the given email address already exists');
         $this->v->rule(
@@ -44,25 +46,21 @@ class Validator
 
     public function validateLogin(array $data): bool|array
     {
-        $email = (string) $data['email'];
-        $this->v = new ValitronValidator($data);
+        $v = new ValitronValidator($data);
 
-        $this->v->rule('required', ['email', 'password']);
-        $this->v->rule('email', 'email');
-        $this->v->rule(
-            fn ($field, $value, $params, $fields) => $this->db->validateEmailNotExist($value),
-            'email'
-        )->message('User with the given email do not exists');
-        $this->v->rule(
-            fn ($field, $value, $params, $fields) => $this->db->vertifyPassword($email, $value),
-            'password'
-        )->message('Password is incorect');
+        $v->rule('required', ['email', 'password']);
+        $v->rule('email', 'email');
 
-        if (!$this->v->validate()) {
-            return $this->v->errors();
-        }
+        if (!$this->auth->attemptLogin($data)) {
+            return false;
+        };
 
         return true;
+    }
+
+    public function validateLogOut(): void
+    {
+        $this->auth->logOut();
     }
 
     public function validatePasswordReset(array $data): bool|array
@@ -72,9 +70,9 @@ class Validator
         $this->v->rule('required', ['email']);
         $this->v->rule('email', 'email');
         $this->v->rule(
-            fn ($field, $value, $params, $fields) => $this->db->validateEmailNotExist($value),
+            fn ($field, $value, $params, $fields) => $this->db->validateEmailExistence($value),
             'email'
-        )->message('User with the given email do not exists');
+        )->message('You have entered an Invalid username or password');
 
         if (!$this->v->validate()) {
             return $this->v->errors();

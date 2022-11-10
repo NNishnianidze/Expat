@@ -40,7 +40,7 @@ class DB
             ->setName($name)
             ->setUserName($userName)
             ->setUserEmail($email)
-            ->setUserPwd($pwd);
+            ->setPassword($pwd);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
@@ -127,14 +127,9 @@ class DB
         $query->execute();
     }
 
-    public function validateEmailExist(string $email): bool|int
+    public function validateEmailExistence(string $email): bool
     {
-        return !$this->entityManager->getRepository(Users::class)->count(['email' => $email]);
-    }
-
-    public function validateEmailNotExist(string $email): bool
-    {
-        if ($this->entityManager->getRepository(Users::class)->count(['email' => $email]) < 1) {
+        if ($this->entityManager->getRepository(Users::class)->findOneBy(['email' => $email]) !== null) {
             return false;
         }
 

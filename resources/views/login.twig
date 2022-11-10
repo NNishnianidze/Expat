@@ -11,43 +11,58 @@
 {% endblock %}
 
 {% block content %}
-<div class="container top mb-2">
-    <h4 class="card-title mt-3 text-center">Log In</h4>
+<div class="container py-5 h-100 mt-4">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+            <div class="card bg-light text-white" style="border-radius: 1rem;">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <h2 class="fw-bold mb-5 text-uppercase text-primary d-flex justify-content-center align-items-center">
+                            <img src="{{ asset('build/images/logo.png') }}" width="64" height="64"
+                                    alt="Expennies Logo" />
+                            Login
+                        </h2>
+                        <form action="/login" method="post" class="form-signin">
+
+                            {% if success is defined %}
+                            <div class="alert alert-success" role="alert">
+                                <p>Successfully Changed Password!</p>
+                            </div>
+                            {% endif %}
+
+                            <div class="form-group input-group mt-4">
+                                <input name="email" class="form-control form-control-lg {{ errors.email ? 'is-invalid' : '' }}" placeholder="Email" value="{{ old.email }}" type="email">
+                            </div>
+                            <div class="invalid-feedback d-block">
+                                {{ errors.email| first }}
+                            </div>
+
+
+                            <div class="form-group input-group mt-4">
+                                <input name="password" class="form-control form-control-lg {{ errors.password ? 'is-invalid' : '' }}" placeholder="Password" type="password">
+                            </div>
+                            <div class="invalid-feedback d-block">
+                                {{ errors.password| first }}
+                            </div>
+                            <p class="text-end">
+                                <a class="text-secondary fw-semibold" href="/password-reset">Forgot password?</a>
+                            </p>
+
+                            <div class="form-group">
+                                <button name="submit" type="submit" class="btn btn-primary btn-block btn-lg px-5"> Log In </button>
+
+                                <p class="mt-4 text-dark">Don't have an account?
+                                    <a href="/register" class="text-primary fw-bold">Sign Up</a>
+                                </p>
+                            </div>
+                            <div class="d-block">
+                                    
+                            </div>
+                        </form>
+                    </div>   
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
- 
-<div class="container d-flex align-items-center justify-content-center">
-    <form action="/login" method="post" class="form-signin">
-
-        {% if success is defined %}
-        <div class="alert alert-success" role="alert">
-            <p>Successfully Changed Password!</p>
-        </div>
-        {% endif %}
-
-        <div class="form-group input-group mt-2">
-            <input name="email" class="form-control {{ errors.email ? 'is-invalid' : '' }}" placeholder="Username" value="{{ old.email }}" type="email">
-        </div>
-        <div class="invalid-feedback d-block">
-            {{ errors.email| first }}
-        </div>
-
-
-        <div class="form-group input-group mt-2">
-            <input name="password" class="form-control {{ errors.password ? 'is-invalid' : '' }}" placeholder="Password" type="password">
-        </div>
-        <div class="invalid-feedback d-block">
-            {{ errors.password| first }}
-        </div>
-        
-        <div class="form-group mt-2">
-            <button name="submit" type="submit" class="btn btn-primary btn-block"> Log In </button>
-        </div>
-        <p class="text-center mt-2">Forgot Password?
-            <a href="/password-reset">Reset Password</a>
-        </p>
-        <p class="text-center">Don't have an account?
-            <a href="/register">Register</a>
-        </p>
-    </form>
-</div>   
 {% endblock %}

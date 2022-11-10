@@ -16,12 +16,8 @@ class HomeController
 
     public function index(Request $request, Response $response)
     {
-        if (!empty($_SESSION["userEmail"])) {
-            return $this->twig->render($response, 'dashboard.twig');
-        }
-
-        session_unset();
-        header('location: ../login');
-        exit();
+        $user = $request->getAttribute('user');
+        var_dump($user?->getId());
+        return $this->twig->render($response, 'dashboard.twig');
     }
 }

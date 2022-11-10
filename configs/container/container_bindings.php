@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Auth;
 use App\Config;
+use App\Contracts\AuthInterface;
+use App\Contracts\UserProviderServiceInterface;
 use App\Enum\AppEnvironment;
-use App\Twig\TwigExtension;
+use App\Services\UserProviderService;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Psr\Container\ContainerInterface;
@@ -55,7 +58,6 @@ return [
         $twig->addExtension(new IntlExtension());
         $twig->addExtension(new EntryFilesTwigExtension($container));
         $twig->addExtension(new AssetExtension($container->get('webpack_encore.packages')));
-        $twig->addExtension(new TwigExtension());
 
         return $twig;
     },
@@ -70,4 +72,8 @@ return [
         $container->get('webpack_encore.packages')
     ),
     ResponseFactoryInterface::class => fn (App $app) => $app->getResponseFactory(),
+    AuthInterface::class                => fn (ContainerInterface $container) => $container->get(Auth::class),
+    UserProviderServiceInterface::class => fn (ContainerInterface $container) => $container->get(
+        UserProviderService::class
+    ),
 ];

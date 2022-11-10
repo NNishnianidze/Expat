@@ -18,7 +18,7 @@ class TransactionsController
     {
         session_start();
 
-        if (!empty($_SESSION["userEmail"])) {
+        if (!empty($_SESSION["user"])) {
             return $this->twig->render($response, 'transactions.twig');
         }
 
