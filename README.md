@@ -28,7 +28,7 @@ Password Reset  | Categorize Transactions   | Total Expense
 * ✅ Configured DB and ORM Entities
 * ✅ Created Login/Register/PaswordReset Functionalities
 * ✅ Created Middlewares for Valitron and Cookie
+* ✅ Refactor to Form Validator - vlucas/valitron
 ### Next ### 
-* Refactor to Form Validator - vlucas/valitron
 * Create Transactions implementing CRUD features
 * Show them on Dashboard
