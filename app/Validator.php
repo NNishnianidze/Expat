@@ -27,7 +27,7 @@ class Validator
 
         $this->v->rule('required', ['name', 'username', 'email', 'password', 'confirmPassword']);
         $this->v->rule('email', 'email');
-        $this->v->rule('equals', 'confirmPassword', 'password')->message('Confirm Password must be the same as Password');
+        $this->v->rule('equals', 'confirmPassword', 'password')->label('Confirm Password must be the same as Password');
         $this->v->rule(
             fn ($field, $value, $params, $fields) => $this->db->validateEmailExistence($value),
             'email'
@@ -35,7 +35,7 @@ class Validator
         $this->v->rule(
             fn ($field, $value, $params, $fields) => $this->db->validateUserName($value),
             'username'
-        )->message('User with the given User Name already exists');
+        )->message('User with the given username already exists');
 
         if (!$this->v->validate()) {
             return $this->v->errors();
@@ -85,7 +85,7 @@ class Validator
     {
         $this->v = new ValitronValidator($data);
 
-        $this->v->rule('required', ['email', 'token'])->message('Password Reset link expired please make new request');
+        $this->v->rule('required', ['email', 'token'])->message('Password reset link expired please make new request');
 
         if (!$this->v->validate()) {
             return $this->v->errors();
