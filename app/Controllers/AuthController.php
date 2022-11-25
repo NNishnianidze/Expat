@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Contracts\AuthInterface;
+use App\Contracts\RequestValidatorFactoryInterface;
+use App\DataObjects\RegisterUserData;
 use App\DB;
 use App\Exception\ValidationException;
-use App\Validator;
+use App\RequestValidators\NewPasswordRequestValidator;
+use App\RequestValidators\RegisterUserRequestValidator;
+use App\RequestValidators\UserLoginRequestValidator;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
@@ -18,69 +23,60 @@ class AuthController
 {
     public function __construct(
         private readonly Twig $twig,
-        private DB $db,
-        private Validator $validator,
+        private readonly DB $db,
+        private readonly RequestValidatorFactoryInterface $requestValidatorFactory,
+        private readonly AuthInterface $auth
     ) {
     }
 
-    public function renderLogin(Request $request, Response $response): Response
+    public function loginView(Request $request, Response $response): Response
     {
         return $this->twig->render($response, 'login.twig');
     }
 
-    public function renderRegister(Request $request, Response $response): Response
+    public function registerView(Request $request, Response $response): Response
     {
-        if (!empty($_SESSION["user"])) {
-            return $this->twig->render($response, 'dashboard.twig');
-        }
-
         return $this->twig->render($response, 'register.twig');
     }
 
-    public function login(Request $request, Response $response)
+    public function register(Request $request, Response $response): Response
     {
-        $data = $request->getParsedBody();
+        $data = $this->requestValidatorFactory->make(RegisterUserRequestValidator::class)->validate(
+            $request->getParsedBody()
+        );
 
-        $validate = $this->validator->validateLogin($data);
+        $this->auth->register(
+            new RegisterUserData($data['name'], $data['userName'], $data['email'], $data['password'])
+        );
 
-        if (!$validate) {
+        return $response->withHeader('Location', '/')->withStatus(302);
+    }
+
+    public function logIn(Request $request, Response $response): Response
+    {
+        $data = $this->requestValidatorFactory->make(UserLoginRequestValidator::class)->validate(
+            $request->getParsedBody()
+        );
+
+        if (!$this->auth->attemptLogin($data)) {
             throw new ValidationException(['password' => ['You have entered an invalid username or password']]);
         }
 
         return $response->withHeader('Location', '/')->withStatus(302);
     }
 
-    public function register(Request $request, Response $response)
+    public function logOut(Request $request, Response $response): Response
     {
-        $data = $request->getParsedBody();
-
-        $validate = $this->validator->validateRegister($data);
-
-        if ($validate !== true) {
-            throw new ValidationException($validate);
-        }
-
-        $this->db->createUser($data['name'], $data['username'], $data['email'], $data['password']);
-
-        return $response->withHeader('Location', '/login')->withStatus(302);;
-    }
-
-    public function logOut(Request $request, Response $response)
-    {
-        $this->validator->validateLogOut();
+        $this->auth->logOut();
 
         return $response->withHeader('Location', '/')->withStatus(302);
     }
 
     public function renderNewPassword(Request $request, Response $response): Response
     {
-        $data = $_GET;
-
-        $validate = $this->validator->validateNewPassword($data);
-
-        if ($validate !== true) {
-            throw new ValidationException($validate);
-        }
+        $data = $this->requestValidatorFactory->make(NewPasswordRequestValidator::class)->validate(
+            $_GET
+        );
 
         $email = $_GET['email'];
         $token = $_GET['token'];;
@@ -91,22 +87,16 @@ class AuthController
             return $this->twig->render($response, 'new-password.twig', ['get' => $_GET]);
         }
 
-        return $this->twig->render($response, '404.twig');
+        return $response->withHeader('Location', '/')->withStatus(404);
     }
 
-    public function setNewPass(Request $request, Response $response)
+    public function setNewPassword(Request $request, Response $response)
     {
-        $data = $request->getParsedBody();
+        $data = $this->requestValidatorFactory->make(SetPasswordRequestValidator::class)->validate(
+            $request->getParsedBody()
+        );
 
-        $email = $data['email'];
-
-        $validate = $this->validator->validateNewPass($data);
-
-        if ($validate !== true) {
-            throw new ValidationException($validate);
-        }
-
-        $this->db->updateUserPwd($email, $data['password']);
+        $this->db->updateUserPassword($data['email'], $data['password']);
 
         return $response->withHeader('Location', '/')->withStatus(302);
     }
@@ -117,13 +107,15 @@ class AuthController
             return $this->twig->render($response, 'password-reset.twig');
         }
 
-        header('location: ../dashboard');
-        exit();
+        return $response->withHeader('Location', '/')->withStatus(404);
     }
 
     public function passwordReset(Request $request, Response $response)
     {
-        $data = $request->getParsedBody();
+        // $data = $request->getParsedBody();
+        $data = $this->requestValidatorFactory->make(UserLoginRequestValidator::class)->validate(
+            $request->getParsedBody()
+        );
 
         $validate = $this->validator->validatePasswordReset($data);
 

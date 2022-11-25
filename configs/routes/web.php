@@ -19,6 +19,6 @@ return function (App $app) {
     $app->get('/password-reset', [AuthController::class, 'renderPasswordReset']);
     $app->post('/password-reset', [AuthController::class, 'passwordReset']);
     $app->get('/new-password', [AuthController::class, 'renderNewPassword']);
-    $app->post('/new-password', [AuthController::class, 'setNewPass']);
+    $app->post('/new-password', [AuthController::class, 'setNewPassword']);
     $app->get('/dashboard/transactions', [TransactionsController::class, 'index']);
 };

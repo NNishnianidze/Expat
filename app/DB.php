@@ -32,20 +32,6 @@ class DB
         return $pwd['password'] ?? [];
     }
 
-    public function createUser(string $name, string $userName, string $email, string $pwd): void
-    {
-        $user = new Users;
-
-        $user
-            ->setName($name)
-            ->setUserName($userName)
-            ->setUserEmail($email)
-            ->setPassword($pwd);
-
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-    }
-
     public function storeToken(string $email, string $token): void
     {
         $passwordReset = new PasswordResets;
@@ -91,7 +77,7 @@ class DB
         return $token['token'] ?? null;
     }
 
-    public function updateUserPwd(string $email, string $password): void
+    public function updateUserPassword(string $email, string $password): void
     {
         $password = password_hash($password, PASSWORD_DEFAULT);
 

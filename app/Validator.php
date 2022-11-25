@@ -80,30 +80,4 @@ class Validator
 
         return true;
     }
-
-    public function validateNewPassword(array $data): bool|array
-    {
-        $this->v = new ValitronValidator($data);
-
-        $this->v->rule('required', ['email', 'token'])->message('Password reset link expired please make new request');
-
-        if (!$this->v->validate()) {
-            return $this->v->errors();
-        }
-
-        return true;
-    }
-
-    public function validateNewPass(array $data): bool|array
-    {
-        $this->v = new ValitronValidator($data);
-
-        $this->v->rule('required', ['password', 'confirmPassword']);
-
-        if (!$this->v->validate()) {
-            return $this->v->errors();
-        }
-
-        return true;
-    }
 }
