@@ -23,13 +23,6 @@
                             Register
                         </h2>
                         <form action="/register" method="post" class="form-signin">
-
-                            {% if success is defined %}
-                            <div class="alert alert-success" role="alert">
-                                <p>Successfully Created an Account!</p>
-                            </div>
-                            {% endif %}
-
                             <div class="form-group input-group mt-4">
                                 <input name="name" class="form-control form-control-lg {{ errors.name ? 'is-invalid' : '' }}" placeholder="Name" value="{{ old.name }}" type="text">
                             </div>

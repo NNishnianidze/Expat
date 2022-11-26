@@ -6,10 +6,16 @@ namespace App\RequestValidators;
 
 use App\Contracts\RequestValidatorInterface;
 use App\Exception\ValidationException;
+use App\DB;
 use Valitron\Validator;
 
 class RegisterUserRequestValidator implements RequestValidatorInterface
 {
+    public function __construct(
+        private readonly DB $db
+    ) {
+    }
+
     public function validate(array $data): array
     {
         $v = new Validator($data);

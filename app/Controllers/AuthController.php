@@ -9,32 +9,33 @@ use App\Contracts\RequestValidatorFactoryInterface;
 use App\DataObjects\RegisterUserData;
 use App\DB;
 use App\Exception\ValidationException;
+use App\Mail;
 use App\RequestValidators\NewPasswordRequestValidator;
+use App\RequestValidators\PasswordResetRequestValidator;
 use App\RequestValidators\RegisterUserRequestValidator;
+use App\RequestValidators\SetPasswordRequestValidator;
 use App\RequestValidators\UserLoginRequestValidator;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
-use Symfony\Component\Mailer\Mailer;
-use Symfony\Component\Mailer\Transport;
-use Symfony\Component\Mime\Email;
 
 class AuthController
 {
     public function __construct(
         private readonly Twig $twig,
         private readonly DB $db,
+        private readonly Mail $mail,
         private readonly RequestValidatorFactoryInterface $requestValidatorFactory,
         private readonly AuthInterface $auth
     ) {
     }
 
-    public function loginView(Request $request, Response $response): Response
+    public function renderLogin(Request $request, Response $response): Response
     {
         return $this->twig->render($response, 'login.twig');
     }
 
-    public function registerView(Request $request, Response $response): Response
+    public function renderRegister(Request $request, Response $response): Response
     {
         return $this->twig->render($response, 'register.twig');
     }
@@ -46,7 +47,7 @@ class AuthController
         );
 
         $this->auth->register(
-            new RegisterUserData($data['name'], $data['userName'], $data['email'], $data['password'])
+            new RegisterUserData($data['name'], $data['username'], $data['email'], $data['password'])
         );
 
         return $response->withHeader('Location', '/')->withStatus(302);
@@ -72,22 +73,60 @@ class AuthController
         return $response->withHeader('Location', '/')->withStatus(302);
     }
 
+
+    public function renderPasswordReset(Request $request, Response $response): Response
+    {
+        if (empty($_SESSION["user"])) {
+
+            if (isset($_SESSION['errors'])) {
+                unset($_SESSION['errors']);
+                return $this->twig->render($response, 'password-reset.twig', ['errors' => ['email' => "Password reset link is expired please make new request"]]);
+            }
+
+            return $this->twig->render($response, 'password-reset.twig',);
+        }
+
+        return $response->withHeader('Location', '/')->withStatus(308);
+    }
+
+    public function passwordReset(Request $request, Response $response)
+    {
+        $data = $this->requestValidatorFactory->make(PasswordResetRequestValidator::class)->validate(
+            $request->getParsedBody()
+        );
+
+        if (!$this->auth->checkCredentials($data)) {
+            throw new ValidationException(['email' => ['You have entered an invalid email']]);
+        };
+
+        $email = $data['email'];
+        $token = $this->getToken($email);
+
+        $this->mail->send($email, $token);
+
+        return $response->withHeader('Location', '/')->withStatus(302);
+    }
+
     public function renderNewPassword(Request $request, Response $response): Response
     {
         $data = $this->requestValidatorFactory->make(NewPasswordRequestValidator::class)->validate(
             $_GET
         );
 
-        $email = $_GET['email'];
-        $token = $_GET['token'];;
+        if ($this->db->getToken($_GET['email']) !== $_GET['token']) {
 
-        $dbToken = $this->db->getToken($email);
+            $_SESSION['errors'] = true;
 
-        if ($dbToken === $token) {
+            return $response->withHeader('Location', '/password-reset')->withStatus(308);
+        }
+
+        $dbToken = $this->db->getToken($_GET['email']);
+
+        if ($dbToken === $_GET['token']) {
             return $this->twig->render($response, 'new-password.twig', ['get' => $_GET]);
         }
 
-        return $response->withHeader('Location', '/')->withStatus(404);
+        return $response->withHeader('Location', '/')->withStatus(308);
     }
 
     public function setNewPassword(Request $request, Response $response)
@@ -98,60 +137,7 @@ class AuthController
 
         $this->db->updateUserPassword($data['email'], $data['password']);
 
-        return $response->withHeader('Location', '/')->withStatus(302);
-    }
-
-    public function renderPasswordReset(Request $request, Response $response): Response
-    {
-        if (empty($_SESSION["user"])) {
-            return $this->twig->render($response, 'password-reset.twig');
-        }
-
-        return $response->withHeader('Location', '/')->withStatus(404);
-    }
-
-    public function passwordReset(Request $request, Response $response)
-    {
-        // $data = $request->getParsedBody();
-        $data = $this->requestValidatorFactory->make(UserLoginRequestValidator::class)->validate(
-            $request->getParsedBody()
-        );
-
-        $validate = $this->validator->validatePasswordReset($data);
-
-        if ($validate !== true) {
-            throw new ValidationException($validate);
-        }
-
-        $email = $data['email'];
-
-        $token = $this->getToken($email);
-
-        $html = <<<HTMLBody
-            <h1 >
-                We recived a request to reset your password.
-            </h1>
-            <p>
-              Use the link below to set up a new password for your account. 
-              If you did not request to reset password, ignore this email 
-              and the link will expire on it own.
-            </p>
-            <a class="btn btn-primary p-3 fw-700" href='http://localhost:8000/new-password?email=$email&token=$token'>Choose a new Password</a>
-        HTMLBody;;
-
-        $email = (new Email())
-            ->from('support@expat.com')
-            ->to($email)
-            ->subject('Reset Password')
-            ->html($html);
-
-        $transport = Transport::fromDsn($_ENV['MAILER_DSN']);
-
-        $mailer = new Mailer($transport);
-
-        $mailer->send($email);
-
-        return $response;
+        return $response->withHeader('Location', '/')->withStatus(308);
     }
 
     public function getToken(string $email): string

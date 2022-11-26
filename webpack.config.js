@@ -24,7 +24,6 @@ Encore
     .addEntry("register", "./resources/js/register.js")
     .addEntry("login", "./resources/js/login.js")
     .addEntry("form-head", "./resources/js/form-head.js")
-    .addEntry("404", "./resources/js/404.js")
     .addEntry("new-password", "./resources/js/new-password.js")
     .addEntry("password-reset", "./resources/js/password-reset.js")
     .addEntry("transactions", "./resources/js/transactions.js")

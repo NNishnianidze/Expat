@@ -14,20 +14,7 @@ class NewPasswordRequestValidator implements RequestValidatorInterface
     {
         $v = new Validator($data);
 
-        $v->rule('required', ['email', 'token'])->message('Password reset link expired please make new request');
-
-        if (!$v->validate()) {
-            throw new ValidationException($v->errors());
-        }
-
-        return $data;
-    }
-
-    public function validateSetPassword(array $data): array
-    {
-        $v = new Validator($data);
-
-        $v->rule('required', ['password', 'confirmPassword']);
+        $v->rule('required', ['email', 'token'])->message('Password reset link is expired please make new request');
 
         if (!$v->validate()) {
             throw new ValidationException($v->errors());

@@ -23,13 +23,6 @@
                             Login
                         </h2>
                         <form action="/login" method="post" class="form-signin">
-
-                            {% if success is defined %}
-                            <div class="alert alert-success" role="alert">
-                                <p>Successfully Changed Password!</p>
-                            </div>
-                            {% endif %}
-
                             <div class="form-group input-group mt-4">
                                 <input name="email" class="form-control form-control-lg {{ errors.email ? 'is-invalid' : '' }}" placeholder="Email" value="{{ old.email }}" type="email">
                             </div>

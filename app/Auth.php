@@ -45,9 +45,9 @@ class Auth implements AuthInterface
 
     public function attemptLogin(array $credentials): bool
     {
-        $user = $this->userProvider->getByCredentials($credentials);
+        $user = $this->checkUser($credentials);
 
-        if (!$user || !$this->checkCredentials($user, $credentials)) {
+        if (!$user || !$this->checkPassword($user, $credentials)) {
             return false;
         }
 
@@ -56,7 +56,29 @@ class Auth implements AuthInterface
         return true;
     }
 
-    public function checkCredentials(UserInterface $user, array $credentials): bool
+    public function checkCredentials(array $credentials): bool
+    {
+        $user = $this->checkUser($credentials);
+
+        if (!$user) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function checkUser(array $credentials): UserInterface | bool
+    {
+        $user = $this->userProvider->getByCredentials($credentials);
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user;
+    }
+
+    public function checkPassword(UserInterface $user, array $credentials): bool
     {
         return password_verify($credentials['password'], $user->getPassword());
     }

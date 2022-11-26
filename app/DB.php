@@ -15,7 +15,7 @@ class DB
     ) {
     }
 
-    public function getUserPwd(string $email): string|array
+    public function getUserPassword(string $email): bool|string
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -27,9 +27,13 @@ class DB
 
         $query = $queryBuilder->getQuery();
 
-        $pwd = $query->getOneOrNullResult();
+        $password = $query->getOneOrNullResult();
 
-        return $pwd['password'] ?? [];
+        if (isset($password['password'])) {
+            return $password['password'];
+        }
+
+        return false;
     }
 
     public function storeToken(string $email, string $token): void
@@ -60,7 +64,7 @@ class DB
         $query->getOneOrNullResult();
     }
 
-    public function getToken($email): string|null
+    public function getToken($email): bool|string
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -74,7 +78,11 @@ class DB
 
         $token = $query->getOneOrNullResult();
 
-        return $token['token'] ?? null;
+        if (!$token['token']) {
+            return false;
+        }
+
+        return $token['token'];
     }
 
     public function updateUserPassword(string $email, string $password): void
@@ -129,9 +137,9 @@ class DB
 
     public function vertifyPassword(string $email, string $value): bool
     {
-        $userPassword = $this->getUserPwd($email);
+        $userPassword = $this->getUserPassword($email);
 
-        if (empty($userPassword) || $userPassword === null) {
+        if (!$userPassword) {
             return false;
         }
 
