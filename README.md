@@ -15,8 +15,8 @@ Password Reset  | Categorize Transactions   | Total Expense
 * MySQL, Doctrine ORM & Migrations
 * Symfony Components
 * PHP-DI
-
-*Using Node, NPM & Webpack to save some time for Forntend* 
+* Node.JS
+* Webpack
 
 ### Forntend ###
 * Bootstrap
@@ -29,6 +29,7 @@ Password Reset  | Categorize Transactions   | Total Expense
 * ✅ Created Login/Register/PaswordReset Functionalities
 * ✅ Created Middlewares for Valitron and Cookie
 * ✅ Refactor to Form Validator - vlucas/valitron
+* ✅ Refactor to use Interfaces
 ### Next ### 
 * Create Transactions implementing CRUD features
 * Show them on Dashboard
