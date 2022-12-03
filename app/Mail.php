@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Contracts\MailInterface;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mime\Email;
 
-class Mail
+class Mail implements MailInterface
 {
-    public function send(string $email, string $token)
+    public function send(string $email, string $token): void
     {
         $html = <<<HTMLBody
             <h1 >

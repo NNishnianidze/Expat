@@ -112,9 +112,9 @@ class Users implements UserInterface
         return $this->password;
     }
 
-    public function setPassword($pwd): Users
+    public function setPassword(string $password): Users
     {
-        $this->password = password_hash($pwd, PASSWORD_DEFAULT);
+        $this->password = password_hash($password, PASSWORD_DEFAULT);
 
         return $this;
     }

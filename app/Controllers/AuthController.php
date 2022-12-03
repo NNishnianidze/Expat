@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Contracts\AuthInterface;
+use App\Contracts\MailInterface;
 use App\Contracts\RequestValidatorFactoryInterface;
 use App\DataObjects\RegisterUserData;
 use App\DB;
 use App\Exception\ValidationException;
-use App\Mail;
 use App\RequestValidators\NewPasswordRequestValidator;
 use App\RequestValidators\PasswordResetRequestValidator;
 use App\RequestValidators\RegisterUserRequestValidator;
@@ -24,7 +24,7 @@ class AuthController
     public function __construct(
         private readonly Twig $twig,
         private readonly DB $db,
-        private readonly Mail $mail,
+        private readonly MailInterface $mail,
         private readonly RequestValidatorFactoryInterface $requestValidatorFactory,
         private readonly AuthInterface $auth
     ) {
@@ -113,20 +113,24 @@ class AuthController
             $_GET
         );
 
-        if ($this->db->getToken($_GET['email']) !== $_GET['token']) {
+        if (isset($_SESSION['reset'])) {
+            $data = $this->requestValidatorFactory->make(NewPasswordRequestValidator::class)->validate(
+                $_SESSION['reset']
+            );
+            unset($_SESSION['reset']);
+        }
+
+
+        if ($this->db->getToken($data['email']) !== $data['token']) {
 
             $_SESSION['errors'] = true;
 
             return $response->withHeader('Location', '/password-reset')->withStatus(308);
         }
 
-        $dbToken = $this->db->getToken($_GET['email']);
+        $_SESSION['reset'] = ['email' => $data['email'], 'token' => $data['token']];
 
-        if ($dbToken === $_GET['token']) {
-            return $this->twig->render($response, 'new-password.twig', ['get' => $_GET]);
-        }
-
-        return $response->withHeader('Location', '/')->withStatus(308);
+        return $this->twig->render($response, 'new-password.twig');
     }
 
     public function setNewPassword(Request $request, Response $response)
@@ -135,21 +139,22 @@ class AuthController
             $request->getParsedBody()
         );
 
-        $this->db->updateUserPassword($data['email'], $data['password']);
+        $this->db->updateUserPassword($_SESSION['reset']['email'], $_SESSION['reset']['token']);
+        unset($_SESSION['reset']);
 
-        return $response->withHeader('Location', '/')->withStatus(308);
+        return $response->withHeader('Location', '/')->withStatus(302);
     }
 
     public function getToken(string $email): string
     {
         $token = bin2hex(random_bytes(50));
 
-        if ($this->db->getToken($email) !== null) {
-            $this->db->modifyToken($email, $token);
+        if (!$this->db->getToken($email)) {
+            $this->db->storeToken($email, $token);
             return $token;
         }
 
-        $this->db->storeToken($email, $token);
+        $this->db->modifyToken($email, $token);
         return $token;
     }
 }

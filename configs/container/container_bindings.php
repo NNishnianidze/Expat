@@ -5,12 +5,14 @@ declare(strict_types=1);
 use App\Auth;
 use App\Config;
 use App\Contracts\AuthInterface;
+use App\Contracts\MailInterface;
 use App\Contracts\RequestValidatorFactoryInterface;
 use App\Contracts\SessionInterface;
 use App\Contracts\UserProviderServiceInterface;
 use App\DataObjects\SessionConfig;
 use App\Enum\AppEnvironment;
 use App\Enum\SameSite;
+use App\Mail;
 use App\RequestValidators\RequestValidatorFactory;
 use App\Services\UserProviderService;
 use App\Session;
@@ -19,6 +21,7 @@ use Doctrine\ORM\ORMSetup;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\App;
+use Slim\Csrf\Guard;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
@@ -94,4 +97,6 @@ return [
     RequestValidatorFactoryInterface::class => fn (ContainerInterface $container) => $container->get(
         RequestValidatorFactory::class
     ),
+    MailInterface::class => fn (ContainerInterface $container) => $container->get(Mail::class),
+    'csrf' => fn (ResponseFactoryInterface $responseFactory) => new Guard($responseFactory, persistentTokenMode: true),
 ];

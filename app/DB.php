@@ -78,7 +78,7 @@ class DB
 
         $token = $query->getOneOrNullResult();
 
-        if (!$token['token']) {
+        if (is_null($token)) {
             return false;
         }
 
@@ -88,8 +88,6 @@ class DB
     public function updateUserPassword(string $email, string $password): void
     {
         $password = password_hash($password, PASSWORD_DEFAULT);
-
-        $this->entityManager->clear();
 
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -102,7 +100,7 @@ class DB
 
         $query = $queryBuilder->getQuery();
 
-        $query->getOneOrNullResult();
+        $query->execute();
 
         $this->clearPasswordResetTable($email);
     }
