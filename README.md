@@ -30,6 +30,7 @@ Password Reset  | Categorize Transactions   | Total Expense
 * ✅ Created Middlewares for Valitron and Cookie
 * ✅ Refactor to Form Validator - vlucas/valitron
 * ✅ Refactor to use Interfaces
+* ✅ Added CSRF.
 ### Next ### 
 * Create Transactions implementing CRUD features
 * Show them on Dashboard
