@@ -15,7 +15,7 @@ return function (App $app) {
     $app->post('/register', [AuthController::class, 'register'])->add(GuestMiddleware::class);
     $app->get('/login', [AuthController::class, 'renderLogin'])->add(GuestMiddleware::class);
     $app->post('/login', [AuthController::class, 'logIn'])->add(GuestMiddleware::class);
-    $app->get('/logout', [AuthController::class, 'logOut'])->add(AuthMiddleware::class);;
+    $app->post('/logout', [AuthController::class, 'logOut'])->add(AuthMiddleware::class);
     $app->get('/password-reset', [AuthController::class, 'renderPasswordReset']);
     $app->post('/password-reset', [AuthController::class, 'passwordReset']);
     $app->get('/new-password', [AuthController::class, 'renderNewPassword']);
