@@ -9,6 +9,7 @@ use App\Contracts\MailInterface;
 use App\Contracts\RequestValidatorFactoryInterface;
 use App\Contracts\SessionInterface;
 use App\Contracts\UserProviderServiceInterface;
+use App\Csrf;
 use App\DataObjects\SessionConfig;
 use App\Enum\AppEnvironment;
 use App\Enum\SameSite;
@@ -98,5 +99,9 @@ return [
         RequestValidatorFactory::class
     ),
     MailInterface::class => fn (ContainerInterface $container) => $container->get(Mail::class),
-    'csrf' => fn (ResponseFactoryInterface $responseFactory) => new Guard($responseFactory, persistentTokenMode: true),
+    'csrf'                                  => fn (ResponseFactoryInterface $responseFactory, Csrf $csrf) => new Guard(
+        $responseFactory,
+        failureHandler: $csrf->failureHandler(),
+        persistentTokenMode: true
+    ),
 ];
