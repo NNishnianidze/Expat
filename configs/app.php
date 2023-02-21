@@ -36,6 +36,6 @@ return [
         'samesite'   => 'lax',
     ],
     'storage'               => [
-        'drive'      => StorageDriver::Local,
+        'driver'      => StorageDriver::Local,
     ]
 ];
