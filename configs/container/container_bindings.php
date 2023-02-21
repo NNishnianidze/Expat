@@ -13,12 +13,15 @@ use App\Csrf;
 use App\DataObjects\SessionConfig;
 use App\Enum\AppEnvironment;
 use App\Enum\SameSite;
+use App\Enum\StorageDriver;
 use App\Mail;
 use App\RequestValidators\RequestValidatorFactory;
 use App\Services\UserProviderService;
 use App\Session;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\App;
@@ -104,4 +107,11 @@ return [
         failureHandler: $csrf->failureHandler(),
         persistentTokenMode: true
     ),
+    Filesystem::class => function (Config $config) {
+        $adapter = match ($config->get('storage.driver')) {
+            StorageDriver::Local => new LocalFilesystemAdapter(STORAGE_PATH),
+        };
+
+        return new Filesystem($adapter);
+    }
 ];
