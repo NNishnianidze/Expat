@@ -1,11 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use App\Auth;
 use App\Config;
 use App\Contracts\AuthInterface;
-use App\Contracts\MailInterface;
 use App\Contracts\RequestValidatorFactoryInterface;
 use App\Contracts\SessionInterface;
 use App\Contracts\UserProviderServiceInterface;
@@ -86,21 +85,21 @@ return [
     /**
      * The following two bindings are needed for EntryFilesTwigExtension & AssetExtension to work for Twig
      */
-    'webpack_encore.packages'               => fn () => new Packages(
+    'webpack_encore.packages'               => fn() => new Packages(
         new Package(new JsonManifestVersionStrategy(BUILD_PATH . '/manifest.json'))
     ),
-    'webpack_encore.tag_renderer'           => fn (ContainerInterface $container) => new TagRenderer(
+    'webpack_encore.tag_renderer'           => fn(ContainerInterface $container) => new TagRenderer(
         new EntrypointLookup(BUILD_PATH . '/entrypoints.json'),
         $container->get('webpack_encore.packages')
     ),
-    ResponseFactoryInterface::class         => fn (App $app) => $app->getResponseFactory(),
-    AuthInterface::class                    => fn (ContainerInterface $container) => $container->get(
+    ResponseFactoryInterface::class         => fn(App $app) => $app->getResponseFactory(),
+    AuthInterface::class                    => fn(ContainerInterface $container) => $container->get(
         Auth::class
     ),
-    UserProviderServiceInterface::class     => fn (ContainerInterface $container) => $container->get(
+    UserProviderServiceInterface::class     => fn(ContainerInterface $container) => $container->get(
         UserProviderService::class
     ),
-    SessionInterface::class                 => fn (Config $config) => new Session(
+    SessionInterface::class                 => fn(Config $config) => new Session(
         new SessionConfig(
             $config->get('session.name', ''),
             $config->get('session.flash_name', 'flash'),
@@ -109,22 +108,20 @@ return [
             SameSite::from($config->get('session.samesite', 'lax'))
         )
     ),
-    RequestValidatorFactoryInterface::class => fn (ContainerInterface $container) => $container->get(
+    RequestValidatorFactoryInterface::class => fn(ContainerInterface $container) => $container->get(
         RequestValidatorFactory::class
     ),
-    'csrf'                                  => fn (ResponseFactoryInterface $responseFactory, Csrf $csrf) => new Guard(
-        $responseFactory,
-        failureHandler: $csrf->failureHandler(),
-        persistentTokenMode: true
+    'csrf'                                  => fn(ResponseFactoryInterface $responseFactory, Csrf $csrf) => new Guard(
+        $responseFactory, failureHandler: $csrf->failureHandler(), persistentTokenMode: true
     ),
-    Filesystem::class => function (Config $config) {
-        $adapter = match ($config->get('storage.driver')) {
+    Filesystem::class => function(Config $config) {
+        $adapter = match($config->get('storage.driver')) {
             StorageDriver::Local => new League\Flysystem\Local\LocalFilesystemAdapter(STORAGE_PATH),
         };
 
         return new League\Flysystem\Filesystem($adapter);
     },
-    Clockwork::class => function (EntityManagerInterface $entityManager) {
+    Clockwork::class => function(EntityManagerInterface $entityManager) {
         $clockwork = new Clockwork();
 
         $clockwork->storage(new FileStorage(STORAGE_PATH . '/clockwork'));

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use App\Controllers\AuthController;
 use App\Controllers\CategoryController;
@@ -24,10 +24,6 @@ return function (App $app) {
     })->add(GuestMiddleware::class);
 
     $app->post('/logout', [AuthController::class, 'logOut'])->add(AuthMiddleware::class);
-    $app->get('/password-reset', [AuthController::class, 'renderPasswordReset']);
-    $app->post('/password-reset', [AuthController::class, 'passwordReset']);
-    $app->get('/new-password', [AuthController::class, 'renderNewPassword']);
-    $app->post('/new-password', [AuthController::class, 'setNewPassword']);
 
     $app->group('/categories', function (RouteCollectorProxy $categories) {
         $categories->get('', [CategoryController::class, 'index']);
