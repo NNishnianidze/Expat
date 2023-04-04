@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Exception;
 
 use Throwable;
-use RuntimeException;
 
-class ValidationException extends RuntimeException
+class ValidationException extends \RuntimeException
 {
     public function __construct(
         public readonly array $errors,

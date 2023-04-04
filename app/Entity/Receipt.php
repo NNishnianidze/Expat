@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Entity;
 
@@ -18,7 +18,7 @@ class Receipt
     private int $id;
 
     #[Column]
-    private string $file_name;
+    private string $filename;
 
     #[Column(name: 'storage_filename')]
     private string $storageFilename;
@@ -37,14 +37,14 @@ class Receipt
         return $this->id;
     }
 
-    public function getFileName(): string
+    public function getFilename(): string
     {
-        return $this->file_name;
+        return $this->filename;
     }
 
-    public function setFileName(string $file_name): Receipt
+    public function setFilename(string $filename): Receipt
     {
-        $this->file_name = $file_name;
+        $this->filename = $filename;
 
         return $this;
     }

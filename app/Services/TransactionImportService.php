@@ -1,24 +1,23 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Services;
 
 use App\DataObjects\TransactionData;
 use App\Entity\Transaction;
-use App\Entity\Users;
-use Doctrine\ORM\EntityManager;
+use App\Entity\User;
 
 class TransactionImportService
 {
     public function __construct(
         private readonly CategoryService $categoryService,
         private readonly TransactionService $transactionService,
-        private readonly EntityManager $entityManager
+        private readonly EntityManagerService $entityManagerService
     ) {
     }
 
-    public function importFromFile(string $file, Users $user): void
+    public function importFromFile(string $file, User $user): void
     {
         $resource   = fopen($file, 'r');
         $categories = $this->categoryService->getAllKeyedByName();
@@ -39,8 +38,8 @@ class TransactionImportService
             $this->transactionService->create($transactionData, $user);
 
             if ($count % $batchSize === 0) {
-                $this->entityManager->flush();
-                $this->entityManager->clear(Transaction::class);
+                $this->entityManagerService->flush();
+                $this->entityManagerService->clear(Transaction::class);
 
                 $count = 1;
             } else {
@@ -49,8 +48,8 @@ class TransactionImportService
         }
 
         if ($count > 1) {
-            $this->entityManager->flush();
-            $this->entityManager->clear();
+            $this->entityManagerService->flush();
+            $this->entityManagerService->clear();
         }
     }
 }

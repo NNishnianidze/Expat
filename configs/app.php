@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 use App\Enum\AppEnvironment;
 use App\Enum\StorageDriver;
@@ -35,7 +35,7 @@ return [
         'httponly'   => true,
         'samesite'   => 'lax',
     ],
-    'storage'               => [
-        'driver'      => StorageDriver::Local,
+    'storage' => [
+        'driver' => StorageDriver::Local,
     ]
 ];

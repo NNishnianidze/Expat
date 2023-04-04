@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\AuthController;
-use App\Controllers\CategoriesController;
+use App\Controllers\CategoryController;
 use App\Controllers\HomeController;
 use App\Controllers\ReceiptController;
 use App\Controllers\TransactionController;
@@ -17,8 +17,8 @@ return function (App $app) {
     $app->get('/', [HomeController::class, 'index'])->add(AuthMiddleware::class);
 
     $app->group('', function (RouteCollectorProxy $guest) {
-        $guest->get('/login', [AuthController::class, 'renderLogin']);
-        $guest->get('/register', [AuthController::class, 'renderRegister']);
+        $guest->get('/login', [AuthController::class, 'loginView']);
+        $guest->get('/register', [AuthController::class, 'registerView']);
         $guest->post('/login', [AuthController::class, 'logIn']);
         $guest->post('/register', [AuthController::class, 'register']);
     })->add(GuestMiddleware::class);
@@ -30,12 +30,12 @@ return function (App $app) {
     $app->post('/new-password', [AuthController::class, 'setNewPassword']);
 
     $app->group('/categories', function (RouteCollectorProxy $categories) {
-        $categories->get('', [CategoriesController::class, 'index']);
-        $categories->get('/load', [CategoriesController::class, 'load']);
-        $categories->post('', [CategoriesController::class, 'store']);
-        $categories->delete('/{id}', [CategoriesController::class, 'delete']);
-        $categories->get('/{id}', [CategoriesController::class, 'get']);
-        $categories->post('/{id}', [CategoriesController::class, 'update']);
+        $categories->get('', [CategoryController::class, 'index']);
+        $categories->get('/load', [CategoryController::class, 'load']);
+        $categories->post('', [CategoryController::class, 'store']);
+        $categories->delete('/{id:[0-9]+}', [CategoryController::class, 'delete']);
+        $categories->get('/{id:[0-9]+}', [CategoryController::class, 'get']);
+        $categories->post('/{id:[0-9]+}', [CategoryController::class, 'update']);
     })->add(AuthMiddleware::class);
 
     $app->group('/transactions', function (RouteCollectorProxy $transactions) {
@@ -55,5 +55,6 @@ return function (App $app) {
             '/{transactionId:[0-9]+}/receipts/{id:[0-9]+}',
             [ReceiptController::class, 'delete']
         );
+        $transactions->post('/{id:[0-9]+}/review', [TransactionController::class, 'toggleReviewed']);
     })->add(AuthMiddleware::class);
 };

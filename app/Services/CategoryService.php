@@ -1,22 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Services;
 
 use App\DataObjects\DataTableQueryParams;
 use App\Entity\Category;
-use App\Entity\Users;
-use Doctrine\ORM\EntityManager;
+use App\Entity\User;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 
-class CategoryService
+class CategoryService extends EntityManagerService
 {
-    public function __construct(private readonly EntityManager $entityManager)
-    {
-    }
-
-    public function create(string $name, Users $user): Category
+    public function create(string $name, User $user): Category
     {
         $category = new Category();
 
@@ -36,8 +31,11 @@ class CategoryService
         $orderBy  = in_array($params->orderBy, ['name', 'createdAt', 'updatedAt']) ? $params->orderBy : 'updatedAt';
         $orderDir = strtolower($params->orderDir) === 'asc' ? 'asc' : 'desc';
 
-        if (!empty($params->searchTerm)) {
-            $query->where('c.name LIKE :name')->setParameter('name', '%' . addcslashes($params->searchTerm, '%_') . '%');
+        if (! empty($params->searchTerm)) {
+            $query->where('c.name LIKE :name')->setParameter(
+                'name',
+                '%' . addcslashes($params->searchTerm, '%_') . '%'
+            );
         }
 
         $query->orderBy('c.' . $orderBy, $orderDir);
@@ -50,7 +48,6 @@ class CategoryService
         $category = $this->entityManager->find(Category::class, $id);
 
         $this->entityManager->remove($category);
-        $this->entityManager->flush();
     }
 
     public function getById(int $id): ?Category
@@ -63,14 +60,14 @@ class CategoryService
         $category->setName($name);
 
         $this->entityManager->persist($category);
-        $this->entityManager->flush();
 
         return $category;
     }
 
     public function getCategoryNames(): array
     {
-        return $this->entityManager->getRepository(Category::class)->createQueryBuilder('c')
+        return $this->entityManager
+            ->getRepository(Category::class)->createQueryBuilder('c')
             ->select('c.id', 'c.name')
             ->getQuery()
             ->getArrayResult();

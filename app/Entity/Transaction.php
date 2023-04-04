@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Entity;
 
@@ -26,6 +26,9 @@ class Transaction
     #[Id, Column(options: ['unsigned' => true]), GeneratedValue]
     private int $id;
 
+    #[Column(name: 'was_reviewed', options: ['default' => 0])]
+    private bool $wasReviewed;
+
     #[Column]
     private string $description;
 
@@ -36,7 +39,7 @@ class Transaction
     private float $amount;
 
     #[ManyToOne(inversedBy: 'transactions')]
-    private Users $user;
+    private User $user;
 
     #[ManyToOne(inversedBy: 'transactions')]
     private ?Category $category;
@@ -90,15 +93,13 @@ class Transaction
         return $this;
     }
 
-    public function getUser(): Users
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    public function setUser(Users $user): Transaction
+    public function setUser(User $user): Transaction
     {
-        //$user->addTransaction($this);
-
         $this->user = $user;
 
         return $this;
@@ -111,8 +112,6 @@ class Transaction
 
     public function setCategory(?Category $category): Transaction
     {
-        //$category?->addTransaction($this);
-
         $this->category = $category;
 
         return $this;
@@ -126,6 +125,18 @@ class Transaction
     public function addReceipt(Receipt $receipt): Transaction
     {
         $this->receipts->add($receipt);
+
+        return $this;
+    }
+
+    public function wasReviewed(): bool
+    {
+        return $this->wasReviewed;
+    }
+
+    public function setReviewed(bool $wasReviewed): Transaction
+    {
+        $this->wasReviewed = $wasReviewed;
 
         return $this;
     }

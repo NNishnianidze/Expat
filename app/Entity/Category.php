@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Entity;
 
@@ -29,7 +29,7 @@ class Category
     private string $name;
 
     #[ManyToOne(inversedBy: 'categories')]
-    private Users $user;
+    private User $user;
 
     #[OneToMany(mappedBy: 'category', targetEntity: Transaction::class)]
     private Collection $transactions;
@@ -56,36 +56,12 @@ class Category
         return $this;
     }
 
-    public function getCreatedAt(): \DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTime $createdAt): Category
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): \DateTime
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(\DateTime $updatedAt): Category
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getUser(): Users
+    public function getUser(): User
     {
         return $this->user;
     }
 
-    public function setUser(Users $user): Category
+    public function setUser(User $user): Category
     {
         $user->addCategory($this);
 

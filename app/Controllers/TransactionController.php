@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Controllers;
 
@@ -54,6 +54,7 @@ class TransactionController
             ),
             $request->getAttribute('user')
         );
+        $this->transactionService->flush();
 
         return $response;
     }
@@ -61,6 +62,7 @@ class TransactionController
     public function delete(Request $request, Response $response, array $args): Response
     {
         $this->transactionService->delete((int) $args['id']);
+        $this->transactionService->flush();
 
         return $response;
     }
@@ -69,7 +71,7 @@ class TransactionController
     {
         $transaction = $this->transactionService->getById((int) $args['id']);
 
-        if (!$transaction) {
+        if (! $transaction) {
             return $response->withStatus(404);
         }
 
@@ -92,7 +94,7 @@ class TransactionController
 
         $id = (int) $data['id'];
 
-        if (!$id || !($transaction = $this->transactionService->getById($id))) {
+        if (! $id || ! ($transaction = $this->transactionService->getById($id))) {
             return $response->withStatus(404);
         }
 
@@ -105,6 +107,7 @@ class TransactionController
                 $data['category']
             )
         );
+        $this->transactionService->flush();
 
         return $response;
     }
@@ -120,10 +123,11 @@ class TransactionController
                 'amount'      => $transaction->getAmount(),
                 'date'        => $transaction->getDate()->format('m/d/Y g:i A'),
                 'category'    => $transaction->getCategory()?->getName(),
-                'receipts'    => $transaction->getReceipts()->map(fn (Receipt $receipt) => [
+                'wasReviewed' => $transaction->wasReviewed(),
+                'receipts'    => $transaction->getReceipts()->map(fn(Receipt $receipt) => [
                     'name' => $receipt->getFilename(),
                     'id'   => $receipt->getId(),
-                ])->toArray()
+                ])->toArray(),
             ];
         };
 
@@ -135,5 +139,19 @@ class TransactionController
             $params->draw,
             $totalTransactions
         );
+    }
+
+    public function toggleReviewed(Request $request, Response $response, array $args): Response
+    {
+        $id = (int) $args['id'];
+
+        if (! $id || ! ($transaction = $this->transactionService->getById($id))) {
+            return $response->withStatus(404);
+        }
+
+        $this->transactionService->toggleReviewed($transaction);
+        $this->transactionService->flush();
+
+        return $response;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Services;
 
@@ -18,7 +18,7 @@ class RequestService
     {
         $referer = $request->getHeader('referer')[0] ?? '';
 
-        if (!$referer) {
+        if (! $referer) {
             return $this->session->get('previousUrl');
         }
 

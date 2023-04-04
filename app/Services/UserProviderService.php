@@ -1,40 +1,38 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Services;
 
 use App\Contracts\UserInterface;
 use App\Contracts\UserProviderServiceInterface;
 use App\DataObjects\RegisterUserData;
-use App\Entity\Users;
-use Doctrine\ORM\EntityManager;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 
 class UserProviderService implements UserProviderServiceInterface
 {
-    public function __construct(private readonly EntityManager $entityManager)
+    public function __construct(private readonly EntityManagerInterface $entityManager)
     {
     }
 
     public function getById(int $userId): ?UserInterface
     {
-        return $this->entityManager->find(Users::class, $userId);
+        return $this->entityManager->find(User::class, $userId);
     }
 
     public function getByCredentials(array $credentials): ?UserInterface
     {
-        return $this->entityManager->getRepository(Users::class)->findOneBy(['email' => $credentials['email']]);
+        return $this->entityManager->getRepository(User::class)->findOneBy(['email' => $credentials['email']]);
     }
 
     public function createUser(RegisterUserData $data): UserInterface
     {
-        $user = new Users;
+        $user = new User();
 
-        $user
-            ->setName($data->name)
-            ->setUserName($data->userName)
-            ->setUserEmail($data->email)
-            ->setPassword($data->password);
+        $user->setName($data->name);
+        $user->setEmail($data->email);
+        $user->setPassword(password_hash($data->password, PASSWORD_BCRYPT, ['cost' => 12]));
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

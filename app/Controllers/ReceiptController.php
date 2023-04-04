@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Controllers;
 
@@ -34,7 +34,7 @@ class ReceiptController
 
         $id = (int) $args['id'];
 
-        if (!$id || !($transaction = $this->transactionService->getById($id))) {
+        if (! $id || ! ($transaction = $this->transactionService->getById($id))) {
             return $response->withStatus(404);
         }
 
@@ -43,6 +43,7 @@ class ReceiptController
         $this->filesystem->write('receipts/' . $randomFilename, $file->getStream()->getContents());
 
         $this->receiptService->create($transaction, $filename, $randomFilename, $file->getClientMediaType());
+        $this->receiptService->flush();
 
         return $response;
     }
@@ -52,11 +53,11 @@ class ReceiptController
         $transactionId = (int) $args['transactionId'];
         $receiptId     = (int) $args['id'];
 
-        if (!$transactionId || !$this->transactionService->getById($transactionId)) {
+        if (! $transactionId || ! $this->transactionService->getById($transactionId)) {
             return $response->withStatus(404);
         }
 
-        if (!$receiptId || !($receipt = $this->receiptService->getById($receiptId))) {
+        if (! $receiptId || ! ($receipt = $this->receiptService->getById($receiptId))) {
             return $response->withStatus(404);
         }
 
@@ -67,7 +68,7 @@ class ReceiptController
         $file = $this->filesystem->readStream('receipts/' . $receipt->getStorageFilename());
 
         $response = $response->withHeader('Content-Disposition', 'inline; filename="' . $receipt->getFilename() . '"')
-            ->withHeader('Content-Type', $receipt->getMediaType());
+                             ->withHeader('Content-Type', $receipt->getMediaType());
 
         return $response->withBody(new Stream($file));
     }
@@ -77,11 +78,11 @@ class ReceiptController
         $transactionId = (int) $args['transactionId'];
         $receiptId     = (int) $args['id'];
 
-        if (!$transactionId || !$this->transactionService->getById($transactionId)) {
+        if (! $transactionId || ! $this->transactionService->getById($transactionId)) {
             return $response->withStatus(404);
         }
 
-        if (!$receiptId || !($receipt = $this->receiptService->getById($receiptId))) {
+        if (! $receiptId || ! ($receipt = $this->receiptService->getById($receiptId))) {
             return $response->withStatus(404);
         }
 
@@ -92,6 +93,7 @@ class ReceiptController
         $this->filesystem->delete('receipts/' . $receipt->getStorageFilename());
 
         $this->receiptService->delete($receipt);
+        $this->receiptService->flush();
 
         return $response;
     }

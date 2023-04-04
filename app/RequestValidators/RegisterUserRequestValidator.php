@@ -1,38 +1,36 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\RequestValidators;
 
 use App\Contracts\RequestValidatorInterface;
+use App\Entity\User;
 use App\Exception\ValidationException;
-use App\DB;
+use Doctrine\ORM\EntityManagerInterface;
 use Valitron\Validator;
 
 class RegisterUserRequestValidator implements RequestValidatorInterface
 {
-    public function __construct(
-        private readonly DB $db
-    ) {
+    public function __construct(private readonly EntityManagerInterface $entityManager)
+    {
     }
 
     public function validate(array $data): array
     {
         $v = new Validator($data);
 
-        $v->rule('required', ['name', 'username', 'email', 'password', 'confirmPassword']);
+        $v->rule('required', ['name', 'email', 'password', 'confirmPassword']);
         $v->rule('email', 'email');
-        $v->rule('equals', 'confirmPassword', 'password')->label('Confirm Password must be the same as Password');
+        $v->rule('equals', 'confirmPassword', 'password')->label('Confirm Password');
         $v->rule(
-            fn ($field, $value, $params, $fields) => $this->db->validateEmailExistence($value),
+            fn($field, $value, $params, $fields) => ! $this->entityManager->getRepository(User::class)->count(
+                ['email' => $value]
+            ),
             'email'
         )->message('User with the given email address already exists');
-        $v->rule(
-            fn ($field, $value, $params, $fields) => $this->db->validateUserName($value),
-            'username'
-        )->message('User with the given username already exists');
 
-        if (!$v->validate()) {
+        if (! $v->validate()) {
             throw new ValidationException($v->errors());
         }
 

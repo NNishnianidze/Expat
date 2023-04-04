@@ -1,48 +1,38 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\Entity;
 
 use App\Contracts\UserInterface;
+use App\Entity\Traits\HasTimestamps;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
-use Doctrine\ORM\Mapping\PrePersist;
-use Doctrine\ORM\Mapping\PreUpdate;
 use Doctrine\ORM\Mapping\Table;
 
-#[Entity]
-#[Table('users')]
+#[Entity, Table('users')]
 #[HasLifecycleCallbacks]
-class Users implements UserInterface
+class User implements UserInterface
 {
+    use HasTimestamps;
+
     #[Id, Column(options: ['unsigned' => true]), GeneratedValue]
     private int $id;
 
     #[Column]
     private string $name;
 
-    #[Column(unique: true)]
-    private string $userName;
-
-    #[Column(unique: true)]
+    #[Column]
     private string $email;
 
     #[Column]
     private string $password;
-
-    #[Column(name: 'created_at')]
-    private \DateTime $createdAt;
-
-    #[Column(name: 'updated_at')]
-    private \DateTime $updatedAt;
 
     #[OneToMany(mappedBy: 'user', targetEntity: Category::class)]
     private Collection $categories;
@@ -61,46 +51,24 @@ class Users implements UserInterface
         return $this->id;
     }
 
-    #[PrePersist, PreUpdate]
-    public function updateTimestamps(LifecycleEventArgs $args): void
-    {
-        if (!isset($this->createdAt)) {
-            $this->createdAt = new \DateTime();
-        }
-
-        $this->updatedAt = new \DateTime();
-    }
-
     public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(string $name): Users
+    public function setName(string $name): User
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getUserName(): string
-    {
-        return $this->userName;
-    }
-
-    public function setUserName(string $userName): Users
-    {
-        $this->userName = $userName;
-
-        return $this;
-    }
-
-    public function getUserEmail(): string
+    public function getEmail(): string
     {
         return $this->email;
     }
 
-    public function setUserEmail(string $email): Users
+    public function setEmail(string $email): User
     {
         $this->email = $email;
 
@@ -112,33 +80,9 @@ class Users implements UserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): Users
+    public function setPassword(string $password): User
     {
-        $this->password = password_hash($password, PASSWORD_DEFAULT);
-
-        return $this;
-    }
-
-    public function getCreatedAt(): \DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTime $createdAt): Users
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): \DateTime
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(\DateTime $updatedAt): Users
-    {
-        $this->updatedAt = $updatedAt;
+        $this->password = $password;
 
         return $this;
     }
@@ -148,7 +92,7 @@ class Users implements UserInterface
         return $this->categories;
     }
 
-    public function addCategory(Category $category): Users
+    public function addCategory(Category $category): User
     {
         $this->categories->add($category);
 
@@ -160,7 +104,7 @@ class Users implements UserInterface
         return $this->transactions;
     }
 
-    public function addTransaction(Transaction $transaction): Users
+    public function addTransaction(Transaction $transaction): User
     {
         $this->transactions->add($transaction);
 

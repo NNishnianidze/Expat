@@ -14,7 +14,6 @@ use App\DataObjects\SessionConfig;
 use App\Enum\AppEnvironment;
 use App\Enum\SameSite;
 use App\Enum\StorageDriver;
-use App\Mail;
 use App\RequestValidators\RequestValidatorFactory;
 use App\Services\UserProviderService;
 use App\Session;
@@ -22,9 +21,9 @@ use Clockwork\DataSource\DoctrineDataSource;
 use Clockwork\Storage\FileStorage;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
 use League\Flysystem\Filesystem;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\App;
@@ -61,7 +60,7 @@ return [
     Config::class                           => create(Config::class)->constructor(
         require CONFIG_PATH . '/app.php'
     ),
-    EntityManager::class                    => function (Config $config) {
+    EntityManagerInterface::class                    => function (Config $config) {
         $ormConfig = ORMSetup::createAttributeMetadataConfiguration(
             $config->get('doctrine.entity_dir'),
             $config->get('doctrine.dev_mode')
@@ -113,7 +112,6 @@ return [
     RequestValidatorFactoryInterface::class => fn (ContainerInterface $container) => $container->get(
         RequestValidatorFactory::class
     ),
-    MailInterface::class => fn (ContainerInterface $container) => $container->get(Mail::class),
     'csrf'                                  => fn (ResponseFactoryInterface $responseFactory, Csrf $csrf) => new Guard(
         $responseFactory,
         failureHandler: $csrf->failureHandler(),
@@ -121,12 +119,12 @@ return [
     ),
     Filesystem::class => function (Config $config) {
         $adapter = match ($config->get('storage.driver')) {
-            StorageDriver::Local => new LocalFilesystemAdapter(STORAGE_PATH),
+            StorageDriver::Local => new League\Flysystem\Local\LocalFilesystemAdapter(STORAGE_PATH),
         };
 
-        return new Filesystem($adapter);
+        return new League\Flysystem\Filesystem($adapter);
     },
-    Clockwork::class => function (EntityManager $entityManager) {
+    Clockwork::class => function (EntityManagerInterface $entityManager) {
         $clockwork = new Clockwork();
 
         $clockwork->storage(new FileStorage(STORAGE_PATH . '/clockwork'));

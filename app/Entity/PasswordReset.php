@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping\Table;
 #[Entity]
 #[Table('password_resets')]
 #[HasLifecycleCallbacks]
-class PasswordResets
+class PasswordReset
 {
     #[Id, Column(options: ['unsigned' => true]), GeneratedValue]
     private int $id;
@@ -54,7 +54,7 @@ class PasswordResets
         return $this->email;
     }
 
-    public function setEmail(string $email): PasswordResets
+    public function setEmail(string $email): PasswordReset
     {
         $this->email = $email;
 
@@ -66,7 +66,7 @@ class PasswordResets
         return $this->token;
     }
 
-    public function setToken($token): PasswordResets
+    public function setToken($token): PasswordReset
     {
         $this->token = $token;
 
@@ -78,7 +78,7 @@ class PasswordResets
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): PasswordResets
+    public function setCreatedAt(\DateTime $createdAt): PasswordReset
     {
         $this->createdAt = $createdAt;
 
@@ -90,7 +90,7 @@ class PasswordResets
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTime $updatedAt): PasswordResets
+    public function setUpdatedAt(\DateTime $updatedAt): PasswordReset
     {
         $this->updatedAt = $updatedAt;
 

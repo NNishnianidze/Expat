@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App\RequestValidators;
 
@@ -18,7 +18,7 @@ class UpdateCategoryRequestValidator implements RequestValidatorInterface
         $v->rule('lengthMax', 'name', 50);
         $v->rule('integer', 'id');
 
-        if (!$v->validate()) {
+        if (! $v->validate()) {
             throw new ValidationException($v->errors());
         }
 

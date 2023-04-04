@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace App;
 
@@ -28,13 +28,13 @@ class Auth implements AuthInterface
 
         $userId = $this->session->get('user');
 
-        if (!$userId) {
+        if (! $userId) {
             return null;
         }
 
         $user = $this->userProvider->getById($userId);
 
-        if (!$user) {
+        if (! $user) {
             return null;
         }
 
@@ -45,9 +45,9 @@ class Auth implements AuthInterface
 
     public function attemptLogin(array $credentials): bool
     {
-        $user = $this->checkUser($credentials);
+        $user = $this->userProvider->getByCredentials($credentials);
 
-        if (!$user || !$this->checkPassword($user, $credentials)) {
+        if (! $user || ! $this->checkCredentials($user, $credentials)) {
             return false;
         }
 
@@ -56,29 +56,7 @@ class Auth implements AuthInterface
         return true;
     }
 
-    public function checkCredentials(array $credentials): bool
-    {
-        $user = $this->checkUser($credentials);
-
-        if (!$user) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function checkUser(array $credentials): UserInterface | bool
-    {
-        $user = $this->userProvider->getByCredentials($credentials);
-
-        if (!$user) {
-            return false;
-        }
-
-        return $user;
-    }
-
-    public function checkPassword(UserInterface $user, array $credentials): bool
+    public function checkCredentials(UserInterface $user, array $credentials): bool
     {
         return password_verify($credentials['password'], $user->getPassword());
     }
